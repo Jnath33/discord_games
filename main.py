@@ -26,7 +26,7 @@ async def clear_game_channel():
     for guild in bot.guilds:
         for categorie in guild.categories:
             for channel in categorie.text_channels:
-                if len(channel.name.split("-")) == 3 and " ".join(channel.name.split("-")[0:2]) == "game card":
+                if len(channel.name.split("-")) >= 3 and " ".join(channel.name.split("-")[0:2]) == "game card":
                     await channel.delete()
     print("end of clear")
 
