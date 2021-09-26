@@ -8,7 +8,7 @@ import card
 
 # set all the dic
 ids = {}
-id_to_totalname = {"n": "Nord", "s": "Sud", "e": "Est", "o": "Ouest"}
+id_to_total_name = {"n": "Nord", "s": "Sud", "e": "Est", "o": "Ouest"}
 pos_to_relative_pos = {"n": {"s": "n", "o": "e", "n": "s", "e": "o"},
                        "s": {"s": "s", "n": "n", "o": "o", "e": "e"},
                        "e": {"s": "e", "n": "o", "o": "s", "e": "n"},
@@ -70,7 +70,7 @@ class Game:
         self.channels = {}
         self.hand_card = {"n": [], "s": [], "o": [], "e": []}
         self.make_cards_list()
-        self.distribue(5)
+        self.distribute(5)
         self.teams_score = {"global": {"ns": 0, "eo": 0},
                             "current": {"ns": 0, "eo": 0}}
 
@@ -82,7 +82,7 @@ class Game:
         }
         for it in self.players.keys():
             overwrites[self.players[it]] = discord.PermissionOverwrite(read_messages=True)
-            self.channels[it] = await self.ctx.channel.category.create_text_channel("game-card-" + id_to_totalname[it]
+            self.channels[it] = await self.ctx.channel.category.create_text_channel("game-card-" + id_to_total_name[it]
                                                                                     + "-" + str(self.id),
                                                                                     overwrites=overwrites)
             del overwrites[self.players[it]]
@@ -97,7 +97,7 @@ class Game:
                 "o": await self.channels["o"].send(self.players["o"].mention)}
         await edits(msgs, content="ㅤ")
 
-        # Create used button yes/no for first turn and the four atout and the deux for the second turn
+        # Create used button yes/no for first turn and the four trump and the deux for the second turn
 
         yes_no_button = ActionRow(
             Button(
@@ -111,7 +111,7 @@ class Game:
                 custom_id="n"
             )
         )
-        deux_button = ActionRow(
+        two_button = ActionRow(
             Button(
                 style=ButtonStyle.gray,
                 label="",
@@ -143,7 +143,7 @@ class Game:
             )
         )
 
-        # Create the ember
+        # Create the embed
         embed = discord.Embed(color=0x37ff00)
         embed.set_footer(text="This game was made by Jnath#5924")
         embed.add_field(name="Belote", value="ㅤ")
@@ -152,7 +152,7 @@ class Game:
                         value="ㅤ",
                         inline=False)
         embed.add_field(name="Score",
-                        value="ㅤ\n\n\nAtouts : " + card.get_atout_color(self.id).value["emoji"] + "\n",
+                        value="ㅤ\n\n\ntrumps : " + card.get_trump_color(self.id).value["emoji"] + "\n",
                         inline=True)
         embed.add_field(name="C'est le tour de",
                         value="ㅤ",
@@ -161,8 +161,8 @@ class Game:
         # Define the first player to play
         start_player = "n"
 
-        # main boucle
-        # this boucle run util a team get the point objectif
+        # main loop
+        # this loop run util a team reach the objective
         while self.teams_score["global"]["ns"] < self.max_point and self.teams_score["global"]["eo"] < self.max_point:
             # the the first field to the card proposed
             embed.set_field_at(0,
@@ -176,7 +176,7 @@ class Game:
             # Add some boolean for stop to the good time
             p_second = True
             run = True
-            who_take_atout = None
+            who_take_trump = None
 
             # first turn
             while run:
@@ -186,38 +186,39 @@ class Game:
                 for i in start_player_to_play_list(start_player):
                     await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []) + [yes_no_button])
 
-                    def check(inter):
-                        return inter.message.id == msgs[i].id and self.players[i] == inter.author
+                    def check(inter_first_turn):
+                        return inter_first_turn.message.id == msgs[i].id and self.players[i] == inter_first_turn.author
 
                     inter = await msgs[i].wait_for_button_click(check)
                     await inter.reply(content="a", type=6)
 
                     await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
                     if inter.clicked_button.custom_id == "y":
-                        card.set_atout_color(self.id, self.cards[0].color)
+                        card.set_trump_color(self.id, self.cards[0].color)
                         p_second = False
                         run = False
-                        who_take_atout = i
-                        self.distribue(3, i)
+                        who_take_trump = i
+                        self.distribute(1, i)
                         break
 
                 # second turn
                 if p_second:
                     for i in start_player_to_play_list(start_player):
-                        await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []) + [deux_button])
+                        await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []) + [two_button])
 
-                        def check(inter):
-                            return inter.message.id == msgs[i].id and self.players[i] == inter.author
+                        def check(inter_second_turn):
+                            return inter_second_turn.message.id == msgs[i].id and self.players[i] == \
+                                   inter_second_turn.author
 
                         inter = await msgs[i].wait_for_button_click(check)
                         await inter.reply(content="a", type=6)
 
                         await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
                         if inter.clicked_button.custom_id != "de":
-                            card.set_atout_color(id, c_id_to_c[inter.clicked_button.custom_id])
+                            card.set_trump_color(id, c_id_to_c[inter.clicked_button.custom_id])
                             run = False
-                            who_take_atout = i
-                            self.distribue(1, i)
+                            who_take_trump = i
+                            self.distribute(1, i)
                             break
 
                 # redistribute the card if nothing was choose
@@ -225,7 +226,7 @@ class Game:
                     cut_int = random.randint(5, 27)
                     self.cards = self.cards[cut_int:32] + self.cards[0:cut_int]
                     self.hand_card = {"n": [], "s": [], "o": [], "e": []}
-                    self.distribue(5)
+                    self.distribute(5)
                     embed.set_field_at(0,
                                        name="Belote",
                                        value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + card.nomber_to_name[
@@ -235,8 +236,15 @@ class Game:
                     start_player = get_next[start_player]
 
             # add missing card to the players
+            bonus = {"ns": 0, "eo": 0}
             for i in self.players:
-                self.distribue(8 - len(self.hand_card[i]), i)
+                self.distribute(8 - len(self.hand_card[i]), i)
+                if card.Card(
+                        card.get_trump_color(self.id), 12, card.get_trump_color(self.id)
+                ) in self.hand_card[i] and card.Card(
+                    card.get_trump_color(self.id), 13, card.get_trump_color(self.id)
+                ) in self.hand_card[i]:
+                    bonus[player_to_team[i]] += 20
                 await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
 
             # set the next player who played to the start player
@@ -250,7 +258,7 @@ class Game:
                 for it in start_player_to_play_list(next_player_to_play):
                     embed.set_field_at(index=3,
                                        name="C'est le tour de",
-                                       value="ㅤ" + self.players[it].name + " (" + id_to_totalname[it] +
+                                       value="ㅤ" + self.players[it].name + " (" + id_to_total_name[it] +
                                              ")",
                                        inline=True)
                     for ite in self.players:
@@ -261,17 +269,19 @@ class Game:
                                                                                      card_played,
                                                                                      get_teammate[it])))
 
-                    def check(inter):
-                        b_id = inter.clicked_button.custom_id.split("-")
-                        if inter.message.id == msgs[it].id and self.players[it] == inter.author:
-                            card_played[it] = card.Card(c_id_to_c[b_id[0]], int(b_id[1]))
+                    def check(inter_choose_card):
+                        b_id = inter_choose_card.clicked_button.custom_id.split("-")
+                        if inter_choose_card.message.id == msgs[it].id and self.players[it] == inter_choose_card.author:
+                            card_played[it] = card.Card(c_id_to_c[b_id[0]], int(b_id[1]), card.get_trump_color(self.id))
                             c_player_hand = self.hand_card[it]
                             d_n = None
                             for c in range(len(c_player_hand)):
-                                if str(c_player_hand[c]) == inter.clicked_button.custom_id:
+                                if str(c_player_hand[c]) == inter_choose_card.clicked_button.custom_id:
                                     d_n = c
                             del self.hand_card[it][d_n]
-                            card_played[str(card.Card(c_id_to_c[b_id[0]], int(b_id[1])))] = it
+                            card_played[str(card.Card(c_id_to_c[b_id[0]],
+                                                      int(b_id[1]),
+                                                      card.get_trump_color(self.id)))] = it
                             return True
                         return False
 
@@ -295,13 +305,13 @@ class Game:
                 self.cards += f_card_list
                 self.teams_score["current"][player_to_team[p_win]] += card.get_points(list(card_played.values()))
             # calculate point
-            if self.teams_score["current"][player_to_team[who_take_atout]] < self.teams_score["current"][
+            if self.teams_score["current"][player_to_team[who_take_trump]] < self.teams_score["current"][
                 player_to_team[
-                    get_next[who_take_atout]]]:
-                self.teams_score["current"][player_to_team[who_take_atout]] = 0
-                self.teams_score["current"][player_to_team[get_next[who_take_atout]]] = 162
-            elif self.teams_score["current"][player_to_team[who_take_atout]] == 162:
-                self.teams_score["current"][player_to_team[who_take_atout]] = 252
+                    get_next[who_take_trump]]]:
+                self.teams_score["current"][player_to_team[who_take_trump]] = 0
+                self.teams_score["current"][player_to_team[get_next[who_take_trump]]] = 162
+            elif self.teams_score["current"][player_to_team[who_take_trump]] == 162:
+                self.teams_score["current"][player_to_team[who_take_trump]] = 252
             self.teams_score["current"][player_to_team[next_player_to_play]] += 10
             self.teams_score["global"]["ns"] += self.teams_score["current"]["ns"]
             self.teams_score["current"]["ns"] = 0
@@ -312,8 +322,8 @@ class Game:
             self.cards = self.cards[cut_int:32] + self.cards[0:cut_int]
             start_player = get_next[start_player]
             # give it to players
-            self.distribue(3)
-            self.distribue(2)
+            self.distribute(3)
+            self.distribute(2)
             # update score embed
             embed = self.update_score(embed, self.teams_score)
             await edits(msgs, embed=embed)
@@ -325,7 +335,7 @@ class Game:
         # send win message
         win_embed = discord.Embed(color=0x37ff00)
         win_embed.add_field(name="Victoire",
-                            value="ㅤ\nVictoire de l'équipe " +
+                            value="ㅤ\nVictoire de r_list'équipe " +
                                   ("NS " + self.players["n"].mention + " " + self.players["s"].mantion
                                    if self.teams_score["global"]["ns"] > self.teams_score["global"]["eo"] else
                                    "EO " + self.players["e"].mention + self.players["o"].mention) +
@@ -333,18 +343,18 @@ class Game:
                                   "\nㅤEO " + str(self.teams_score["global"]["eo"])
                             )
         await self.j_msg.edit(embed=win_embed)
-        card.del_atout_color(self.id)
+        card.del_trump_color(self.id)
         del ids[self.id]
 
-    # the function to disctibute card to player
-    def distribue(self, card, player=None):
+    # the function to distribute card to player
+    def distribute(self, card_n, player=None):
         if player is None:
             for i in self.players:
-                self.hand_card[i] += self.cards[0:card]
-                del self.cards[0:card]
+                self.hand_card[i] += self.cards[0:card_n]
+                del self.cards[0:card_n]
         else:
-            self.hand_card[player] += self.cards[0:card]
-            del self.cards[0:card]
+            self.hand_card[player] += self.cards[0:card_n]
+            del self.cards[0:card_n]
 
     # the function ton update the score in the embed
     def update_score(self, embed, score):
@@ -358,13 +368,13 @@ class Game:
                                  ") : " + str(score["global"]["ns"]) +
                                  "\nEO (" + self.players["e"].name + ", " + self.players["o"].name +
                                  ") : " + str(score["global"]["eo"]) +
-                                 "\n\n**Atouts** : " + card.get_atout_color(self.id).value["emoji"] + "\n",
+                                 "\n\n**trumps** : " + card.get_trump_color(self.id).value["emoji"] + "\n",
                            inline=True)
         return embed
 
     # make a list with all the card
     def make_cards_list(self):
-        t_cards = [[card.Card(i, m) for m in range(7, 14)] for i in [card.Color.COEUR,
+        t_cards = [[card.Card(i, m, card.get_trump_color(self.id)) for m in range(7, 14)] for i in [card.Color.COEUR,
                                                                      card.Color.TREFLE,
                                                                      card.Color.CARREAUX,
                                                                      card.Color.PIQUE]]
@@ -375,7 +385,7 @@ class Game:
                   card.Color.TREFLE,
                   card.Color.CARREAUX,
                   card.Color.PIQUE]:
-            self.cards.append(card.Card(i, 1))
+            self.cards.append(card.Card(i, 1, card.get_trump_color(self.id)))
 
         random.shuffle(self.cards)
 
@@ -387,14 +397,14 @@ async def edits(msgs, **kwargs):
 
 
 # create a list who start to a player and do a circle
-def start_player_to_play_list(f_p, s=None, l=None):
-    if l is None:
-        l = []
+def start_player_to_play_list(f_p, s=None, r_list=None):
+    if r_list is None:
+        r_list = []
     if f_p == s:
-        return l
+        return r_list
     else:
-        l.append(f_p)
+        r_list.append(f_p)
         if s is None:
-            return start_player_to_play_list(get_next[f_p], f_p, l)
+            return start_player_to_play_list(get_next[f_p], f_p, r_list)
         else:
-            return start_player_to_play_list(get_next[f_p], s, l)
+            return start_player_to_play_list(get_next[f_p], s, r_list)

@@ -29,7 +29,7 @@ rps_buttons = ActionRow(
 )
 
 
-# a simple function for don't nomber have error
+# a simple function for don't number have error
 def verif_n(n):
     return verif_n(n - 3) if n > 3 else n
 
