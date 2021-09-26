@@ -30,7 +30,7 @@ async def clear_game_channel():
                 if len(channel.name.split("-")) >= 3 and " ".join(channel.name.split("-")[0:2]) == "game card":
                     await channel.delete()
     print("end of clear")
-print(card.to_buttons([card.Card(card.Color.CARREAUX, 10, None)], ["ca-10"]))
+
 
 @bot.event
 async def on_ready():

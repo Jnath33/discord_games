@@ -4,10 +4,10 @@ from dislash import ButtonStyle, Button, ActionRow
 
 
 class Color(Enum):
-    COEUR = {"id": "co", "emoji": ":heart:","uemoji": "❤️", "int": 1}
-    CARREAUX = {"id": "ca", "emoji": ":diamonds:","uemoji": "♦️", "int": 2}
-    TREFLE = {"id": "tr", "emoji": ":clubs:","uemoji": "♣️", "int": 3}
-    PIQUE = {"id": "pi", "emoji": ":spades:","uemoji": "♠️", "int": 4}
+    COEUR = {"id": "co", "emoji": ":heart:", "uemoji": "❤️", "int": 1}
+    CARREAUX = {"id": "ca", "emoji": ":diamonds:", "uemoji": "♦️", "int": 2}
+    TREFLE = {"id": "tr", "emoji": ":clubs:", "uemoji": "♣️", "int": 3}
+    PIQUE = {"id": "pi", "emoji": ":spades:", "uemoji": "♠️", "int": 4}
 
 
 to_atout = {7: 1, 8: 2, 12: 3, 13: 4, 10: 5, 1: 6, 9: 7, 11: 8}
@@ -28,39 +28,46 @@ def to_buttons(card_list, autorized_button):
             disabled=True
         ))
     raws = []
-    for i in range(int((len(card_buttons)-1)/5)+1):
-        raws.append(ActionRow(*card_buttons[i*5:min((i+1)*5, len(card_buttons))]))
-        for it in range(min((i+1)*5, len(card_buttons)-i*5)):
+    for i in range(int((len(card_buttons) - 1) / 5) + 1):
+        raws.append(ActionRow(*card_buttons[i * 5:min((i + 1) * 5, len(card_buttons))]))
+        for it in range(min((i + 1) * 5, len(card_buttons) - i * 5)):
             if raws[i].components[it].custom_id in autorized_button:
                 raws[i].enable_buttons(it)
 
     return raws
 
 
-def set_atout_color(color):
-    atout_color = color
+def get_playable(card_list, color):
+    can_play = []
+    if color is not None:
+        for card in card_list:
+            if card.color in [color, atout_color]:
+                can_play.append(str(card))
+    if len(can_play) == 0:
+        for card in card_list:
+            can_play.append(str(card))
+    return can_play
 
 
 class Card:
-    def __init__(self, color: Color, nomber: int, player):
+    def __init__(self, color: Color, nomber: int):
         self.color = color
         self.nomber = nomber
-        self.player = player
 
     def beat(self, color_start, card):
         if self.color != card.color:
             if not color_start == card.color:
                 if card.color == atout_color:
-                    return False
-                else:
                     return True
+                else:
+                    return False
             else:
-                if card.color == atout_color:
-                    return True
-                else:
+                if self.color == atout_color:
                     return False
+                else:
+                    return to_normal[self.nomber] < to_normal[self.nomber]
         c_list = to_atout if self.color == atout_color else to_normal
-        return c_list[self.nomber] > c_list[card.nomber]
+        return c_list[self.nomber] < c_list[card.nomber]
 
     def __cmp__(self, other):
         return cmp((self.color.value["int"] * 100 + self.nomber), (other.color.value["int"] * 100 + other.nomber))
@@ -87,9 +94,14 @@ class Card:
         return self.color.value["id"] + "-" + str(self.nomber)
 
 
-def beats(color_start, cards):
+def beats(color_start, cards_nv):
+    cards = []
+    for card in cards_nv:
+        if type(card) is Card:
+            cards.append(card)
     c_best = cards[0]
     for i in range(3):
-        if not c_best.beat(color_start, i):
-            c_best = i
+        if c_best.beat(color_start, cards[i+1]):
+            print(cards[i+1])
+            c_best = cards[i+1]
     return c_best
