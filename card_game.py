@@ -75,8 +75,8 @@ class Game:
 
         await self.edits_game_message(embed,
                                       {"n": card.Card(card.Color.CARREAUX, 11, self.players["n"]),
-                                            "e": card.Card(card.Color.COEUR, 8, self.players["e"]),
-                                            "s": card.Card(card.Color.CARREAUX, 10, self.players["s"])},
+                                       "e": card.Card(card.Color.COEUR, 8, self.players["e"]),
+                                       "s": card.Card(card.Color.CARREAUX, 10, self.players["s"])},
                                       msgs)
         await edits(msgs, content="", embed=embed, components=[])
 
@@ -102,9 +102,9 @@ class Game:
                                name="Belote",
                                value="ㅤ" +
                                      "\nㅤㅤㅤㅤ" + (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
-                                                card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
-                                                if pos_to_relative_pos[i]["n"] in val else
-                                                "ㅤㅤ") +
+                                                 card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
+                                                 if pos_to_relative_pos[i]["n"] in val else
+                                                 "ㅤㅤ") +
                                      "\n\n" + (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
                                                card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
                                                if pos_to_relative_pos[i]["n"] in val else
