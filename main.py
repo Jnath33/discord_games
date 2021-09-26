@@ -78,6 +78,7 @@ async def cards(ctx, point: int = 1000):
     games_player = {}
     game_player_inter = {}
 
+    # create waiting embed
     embed = discord.Embed(color=0xff8800)
     embed.add_field(name="Belote", value="ㅤ" +
                                          "\nJoueur Nord : " + (
@@ -90,8 +91,11 @@ async def cards(ctx, point: int = 1000):
                                              games_player["o"].mention if "o" in games_player else "[Waiting]")
                     )
     embed.set_footer(text="This game was made by Jnath#5924")
+    # send embed
     j_msg = await ctx.send(embed=embed,
                            components=[joins_button])
+
+    # wait player join
     for i in range(4):
         def check(inter):
             c_1 = inter.message.id == j_msg.id
@@ -133,6 +137,7 @@ async def cards(ctx, point: int = 1000):
         else:
             await j_msg.edit(embed=embed)
 
+    # start the game
     game = card_game.Game(games_player, game_player_inter, ctx, j_msg, point)
     if game.can_start:
         await game.end_init()
