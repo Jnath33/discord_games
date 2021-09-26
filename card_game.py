@@ -368,16 +368,16 @@ class Game:
                                  ") : " + str(score["global"]["ns"]) +
                                  "\nEO (" + self.players["e"].name + ", " + self.players["o"].name +
                                  ") : " + str(score["global"]["eo"]) +
-                                 "\n\n**trumps** : " + card.get_trump_color(self.id).value["emoji"] + "\n",
+                                 "\n\n**Atout** : " + card.get_trump_color(self.id).value["emoji"] + "\n",
                            inline=True)
         return embed
 
     # make a list with all the card
     def make_cards_list(self):
         t_cards = [[card.Card(i, m, card.get_trump_color(self.id)) for m in range(7, 14)] for i in [card.Color.COEUR,
-                                                                     card.Color.TREFLE,
-                                                                     card.Color.CARREAUX,
-                                                                     card.Color.PIQUE]]
+                                                                                                    card.Color.TREFLE,
+                                                                                                    card.Color.CARREAUX,
+                                                                                                    card.Color.PIQUE]]
         self.cards = []
         for i in t_cards:
             self.cards += i
