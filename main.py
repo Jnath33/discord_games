@@ -1,6 +1,4 @@
 # Imports
-import asyncio
-
 import discord
 from discord.ext import commands
 from dislash import InteractionClient, ActionRow, Button, ButtonStyle
@@ -8,11 +6,12 @@ from dislash import InteractionClient, ActionRow, Button, ButtonStyle
 import card
 import card_game
 import rps_game
+import morpion_game
 
 # Init the bot
 bot = commands.Bot(command_prefix="!")
 # Init the interaction client in the bot
-inter_client = InteractionClient(bot, test_guilds=[888726742192255006])
+inter_client = InteractionClient(bot)
 
 join_button = ActionRow(
     Button(
@@ -21,6 +20,7 @@ join_button = ActionRow(
         custom_id="join"
     )
 )
+
 
 
 async def clear_game_channel():
@@ -40,6 +40,26 @@ async def on_ready():
 @bot.event
 async def on_message_delete(message):
     print(message.content)
+
+
+@bot.command(aliases=["morp"])
+async def morpion(ctx):
+    embed = discord.Embed(title="Waiting", color=0xff8800)
+
+    embed.add_field(name="ㅤ", value=ctx.author.mention + " attend un autre joueur pour jouer au morpion")
+    embed.set_footer(text="This game was made by Jnath#5924")
+
+    msg = await ctx.send(embed=embed, components=[join_button])
+
+    def check(inter):
+        return inter.message.id == msg.id# and inter.author != ctx.author
+
+    inter = await ctx.wait_for_button_click(check)
+    await inter.reply(content='c', type=6)
+    await msg.edit(content="ㅤ", components=[], embed=None)
+
+    await morpion_game.Game(msg, [ctx.author, inter.author]).start()
+
 
 
 @bot.command(aliases=["card", "card_game"])
