@@ -28,20 +28,7 @@ class Game:
         self.p_to_inter = {}
         self.channels = {}
         self.hand_card = {"n": [], "s": [], "o": [], "e": []}
-        t_cards = [[card.Card(i, m, None) for m in range(7, 14)] for i in [card.Color.COEUR,
-                                                                           card.Color.TREFLE,
-                                                                           card.Color.CARREAUX,
-                                                                           card.Color.PIQUE]]
-        self.cards = []
-        for i in t_cards:
-            self.cards += i
-        for i in [card.Color.COEUR,
-                  card.Color.TREFLE,
-                  card.Color.CARREAUX,
-                  card.Color.PIQUE]:
-            self.cards.append(card.Card(i, 1, None))
-
-        random.shuffle(self.cards)
+        self.make_cards_list()
         self.distribue(5)
 
     async def end_init(self):
@@ -110,7 +97,7 @@ class Game:
                 emoji="♠️"
             ),
             Button(
-                style=ButtonStyle.gray,
+                style=ButtonStyle.red,
                 label="Deux",
                 custom_id="de"
             )
@@ -143,13 +130,16 @@ class Game:
 
         embed.set_field_at(0,
                            name="Belote",
-                           value="ㅤ\nㅤ"+self.cards[0].color.value["emoji"]+card.nomber_to_name[self.cards[0].nomber])
+                           value="ㅤ\nㅤ"+self.cards[0].color.value["emoji"]+card.nomber_to_name[self.cards[0].nomber]+"\nㅤ")
         await edits(msgs, embed=embed)
 
         p_second = True
         run = True
 
         while run:
+            for i in self.players:
+                await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
+
             for i in start_player_to_play_list(next_player_to_play):
                 await msgs[i].edit(components=card.to_buttons(self.hand_card[i], [])+[yes_no_button])
 
@@ -188,9 +178,20 @@ class Game:
                         run = False
                         break
             if run:
+                self.make_cards_list()
+                self.hand_card = {"n": [], "s": [], "o": [], "e": []}
+                self.distribue(5)
+                embed.set_field_at(0,
+                                   name="Belote",
+                                   value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + card.nomber_to_name[
+                                       self.cards[0].nomber] + "\nㅤ")
+                await edits(msgs, embed=embed)
+
                 next_player_to_play = get_next[next_player_to_play]
 
-        for i in range(8):
+        #for i in range(8):
+         #   card_played
+          #  for i in start_player_to_play_list(next_player_to_play):
 
 
 
@@ -242,6 +243,22 @@ class Game:
         else:
             self.hand_card[player] += self.cards[0:card]
             del self.cards[0:card]
+
+    def make_cards_list(self):
+        t_cards = [[card.Card(i, m, None) for m in range(7, 14)] for i in [card.Color.COEUR,
+                                                                           card.Color.TREFLE,
+                                                                           card.Color.CARREAUX,
+                                                                           card.Color.PIQUE]]
+        self.cards = []
+        for i in t_cards:
+            self.cards += i
+        for i in [card.Color.COEUR,
+                  card.Color.TREFLE,
+                  card.Color.CARREAUX,
+                  card.Color.PIQUE]:
+            self.cards.append(card.Card(i, 1, None))
+
+        random.shuffle(self.cards)
 
 
 async def edits(msgs, **kwargs):
