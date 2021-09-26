@@ -6,6 +6,7 @@ from dislash import ActionRow, Button, ButtonStyle
 
 import card
 
+# set all the dic
 ids = {}
 id_to_totalname = {"n": "Nord", "s": "Sud", "e": "Est", "o": "Ouest"}
 pos_to_relative_pos = {"n": {"s": "n", "o": "e", "n": "s", "e": "o"},
@@ -14,7 +15,7 @@ pos_to_relative_pos = {"n": {"s": "n", "o": "e", "n": "s", "e": "o"},
                        "o": {"s": "o", "n": "e", "o": "n", "e": "s"}}
 get_next = {"n": "e", "e": "s", "s": "o", "o": "n"}
 get_teammate = {"n": "s", "s": "n", "o": "e", "e": "o"}
-
+player_to_team = {"n": "ns", "s": "ns", "o": "eo", "e": "eo"}
 c_id_to_c = {
     "co": card.Color.COEUR,
     "ca": card.Color.CARREAUX,
@@ -24,6 +25,7 @@ c_id_to_c = {
 }
 
 
+# return a the good message where i is the player id
 def get_game_message(embed, val, i):
     embed.set_field_at(index=0,
                        name="Belote",
@@ -49,9 +51,9 @@ def get_game_message(embed, val, i):
     return embed
 
 
+# the main class
 class Game:
-    def __init__(self, players, inter, ctx, j_msg, point=100):
-        print(point)
+    def __init__(self, players, inter, ctx, j_msg, point=1000):
         self.max_point = point
         self.j_msg = j_msg
         self.cards = []
@@ -69,7 +71,10 @@ class Game:
         self.hand_card = {"n": [], "s": [], "o": [], "e": []}
         self.make_cards_list()
         self.distribue(5)
+        self.teams_score = {"global": {"ns": 0, "eo": 0},
+                            "current": {"ns": 0, "eo": 0}}
 
+    # add a end init because init can be async
     async def end_init(self):
         guild = self.ctx.guild
         overwrites = {
@@ -82,11 +87,8 @@ class Game:
                                                                                     overwrites=overwrites)
             del overwrites[self.players[it]]
 
+    # the game
     async def start(self):
-
-        player_to_team = {"n": "ns", "s": "ns", "o": "eo", "e": "eo"}
-        teams_score = {"global": {"ns": 0, "eo": 0},
-                       "current": {"ns": 0, "eo": 0}}
 
         print(f"Game {self.id} is starting")
         msgs = {"n": await self.channels["n"].send(self.players["n"].mention),
@@ -94,7 +96,9 @@ class Game:
                 "e": await self.channels["e"].send(self.players["e"].mention),
                 "o": await self.channels["o"].send(self.players["o"].mention)}
         await edits(msgs, content="ㅤ")
-        embed = discord.Embed(color=0xff8800)
+
+        # Create used button yes/no for first turn and the four atout and the deux for the second turn
+
         yes_no_button = ActionRow(
             Button(
                 style=ButtonStyle.green,
@@ -138,6 +142,8 @@ class Game:
                 custom_id="de"
             )
         )
+
+        # Create the ember
         embed = discord.Embed(color=0x37ff00)
         embed.set_footer(text="This game was made by Jnath#5924")
         embed.add_field(name="Belote", value="ㅤ")
@@ -152,19 +158,27 @@ class Game:
                         value="ㅤ",
                         inline=True)
 
+        # Define the first player to play
         start_player = "n"
-        while teams_score["global"]["ns"] < self.max_point and teams_score["global"]["eo"] < self.max_point:
+
+        # main boucle
+        # this boucle run util a team get the point objectif
+        while self.teams_score["global"]["ns"] < self.max_point and self.teams_score["global"]["eo"] < self.max_point:
+            # the the first field to the card proposed
             embed.set_field_at(0,
                                name="Belote",
                                value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + card.nomber_to_name[
                                    self.cards[0].nomber] +
                                      "\nㅤ")
+            # edits the messages with the new embed
             await edits(msgs, embed=embed)
 
+            # Add some boolean for stop to the good time
             p_second = True
             run = True
             who_take_atout = None
 
+            # first turn
             while run:
                 for i in self.players:
                     await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
@@ -187,6 +201,7 @@ class Game:
                         self.distribue(3, i)
                         break
 
+                # second turn
                 if p_second:
                     for i in start_player_to_play_list(start_player):
                         await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []) + [deux_button])
@@ -204,6 +219,8 @@ class Game:
                             who_take_atout = i
                             self.distribue(1, i)
                             break
+
+                # redistribute the card if nothing was choose
                 if run:
                     cut_int = random.randint(5, 27)
                     self.cards = self.cards[cut_int:32] + self.cards[0:cut_int]
@@ -217,15 +234,19 @@ class Game:
 
                     start_player = get_next[start_player]
 
+            # add missing card to the players
             for i in self.players:
                 self.distribue(8 - len(self.hand_card[i]), i)
                 await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
 
+            # set the next player who played to the start player
             next_player_to_play = start_player
+            # A card turn
             for i in range(8):
                 card_played = {}
                 card_color = None
-                embed = self.update_score(embed, teams_score)
+                embed = self.update_score(embed, self.teams_score)
+                # a card duel
                 for it in start_player_to_play_list(next_player_to_play):
                     embed.set_field_at(index=3,
                                        name="C'est le tour de",
@@ -272,44 +293,50 @@ class Game:
                     if type(ca) is card.Card:
                         f_card_list.append(ca)
                 self.cards += f_card_list
-                teams_score["current"][player_to_team[p_win]] += card.get_points(list(card_played.values()))
-            if teams_score["current"][player_to_team[who_take_atout]] < teams_score["current"][
+                self.teams_score["current"][player_to_team[p_win]] += card.get_points(list(card_played.values()))
+            # calculate point
+            if self.teams_score["current"][player_to_team[who_take_atout]] < self.teams_score["current"][
                 player_to_team[
                     get_next[who_take_atout]]]:
-                teams_score["current"][player_to_team[who_take_atout]] = 0
-                teams_score["current"][player_to_team[get_next[who_take_atout]]] = 162
-            elif teams_score["current"][player_to_team[who_take_atout]] == 162:
-                teams_score["current"][player_to_team[who_take_atout]] = 252
-            teams_score["current"][player_to_team[next_player_to_play]] += 10
-            teams_score["global"]["ns"] += teams_score["current"]["ns"]
-            teams_score["current"]["ns"] = 0
-            teams_score["global"]["eo"] += teams_score["current"]["eo"]
-            teams_score["current"]["eo"] = 0
+                self.teams_score["current"][player_to_team[who_take_atout]] = 0
+                self.teams_score["current"][player_to_team[get_next[who_take_atout]]] = 162
+            elif self.teams_score["current"][player_to_team[who_take_atout]] == 162:
+                self.teams_score["current"][player_to_team[who_take_atout]] = 252
+            self.teams_score["current"][player_to_team[next_player_to_play]] += 10
+            self.teams_score["global"]["ns"] += self.teams_score["current"]["ns"]
+            self.teams_score["current"]["ns"] = 0
+            self.teams_score["global"]["eo"] += self.teams_score["current"]["eo"]
+            self.teams_score["current"]["eo"] = 0
+            # cut the game
             cut_int = random.randint(5, 27)
             self.cards = self.cards[cut_int:32] + self.cards[0:cut_int]
             start_player = get_next[start_player]
+            # give it to players
             self.distribue(3)
             self.distribue(2)
-            embed = self.update_score(embed, teams_score)
+            # update score embed
+            embed = self.update_score(embed, self.teams_score)
             await edits(msgs, embed=embed)
-            print(teams_score["global"]["eo"])
-            print(teams_score["global"]["eo"] < self.max_point)
+
+        # remove tmp game channel
         for msg in msgs.values():
             await msg.channel.delete()
 
+        # send win message
         win_embed = discord.Embed(color=0x37ff00)
         win_embed.add_field(name="Victoire",
                             value="ㅤ\nVictoire de l'équipe " +
                                   ("NS " + self.players["n"].mention + " " + self.players["s"].mantion
-                                   if teams_score["global"]["ns"] > teams_score["global"]["eo"] else
+                                   if self.teams_score["global"]["ns"] > self.teams_score["global"]["eo"] else
                                    "EO " + self.players["e"].mention + self.players["o"].mention) +
-                                  "\nㅤNS : " + str(teams_score["global"]["ns"]) +
-                                  "\nㅤEO " + str(teams_score["global"]["eo"])
+                                  "\nㅤNS : " + str(self.teams_score["global"]["ns"]) +
+                                  "\nㅤEO " + str(self.teams_score["global"]["eo"])
                             )
         await self.j_msg.edit(embed=win_embed)
         card.del_atout_color(self.id)
         del ids[self.id]
 
+    # the function to disctibute card to player
     def distribue(self, card, player=None):
         if player is None:
             for i in self.players:
@@ -319,6 +346,7 @@ class Game:
             self.hand_card[player] += self.cards[0:card]
             del self.cards[0:card]
 
+    # the function ton update the score in the embed
     def update_score(self, embed, score):
         embed.set_field_at(index=2,
                            name="Scoreㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤㅤ",
@@ -334,6 +362,7 @@ class Game:
                            inline=True)
         return embed
 
+    # make a list with all the card
     def make_cards_list(self):
         t_cards = [[card.Card(i, m) for m in range(7, 14)] for i in [card.Color.COEUR,
                                                                      card.Color.TREFLE,
@@ -351,11 +380,13 @@ class Game:
         random.shuffle(self.cards)
 
 
+# function for edit multiple message
 async def edits(msgs, **kwargs):
     for msg in msgs.values():
         await msg.edit(**kwargs)
 
 
+# create a list who start to a player and do a circle
 def start_player_to_play_list(f_p, s=None, l=None):
     if l is None:
         l = []
