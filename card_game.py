@@ -22,6 +22,31 @@ c_id_to_c = {
 }
 
 
+def get_game_message(embed, val, i):
+    embed.set_field_at(index=0,
+                       name="Belote",
+                       value="ㅤ" +
+                             "\nㅤㅤㅤㅤ" + (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
+                                         card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
+                                         if pos_to_relative_pos[i]["n"] in val else
+                                         "ㅤㅤ") +
+                             "\n\n" + (val[pos_to_relative_pos[i]["o"]].color.value["emoji"] +
+                                       card.nomber_to_name[val[pos_to_relative_pos[i]["o"]].nomber]
+                                       if pos_to_relative_pos[i]["o"] in val else
+                                       "ㅤㅤ") + "\nㅤㅤㅤㅤㅤㅤㅤㅤ" +
+                             (val[pos_to_relative_pos[i]["e"]].color.value["emoji"] +
+                              card.nomber_to_name[val[pos_to_relative_pos[i]["e"]].nomber]
+                              if pos_to_relative_pos[i]["e"] in val else
+                              "ㅤㅤ") +
+                             "\n\nㅤㅤㅤㅤ" + (
+                                 val[pos_to_relative_pos[i]["s"]].color.value["emoji"] +
+                                 card.nomber_to_name[val[pos_to_relative_pos[i]["s"]].nomber]
+                                 if pos_to_relative_pos[i]["s"] in val else
+                                 "ㅤㅤ") + "\n"
+                       )
+    return embed
+
+
 class Game:
     def __init__(self, players, inter, ctx):
         self.cards = []
@@ -59,15 +84,8 @@ class Game:
                 "s": await self.channels["s"].send(self.players["s"].mention),
                 "e": await self.channels["e"].send(self.players["e"].mention),
                 "o": await self.channels["o"].send(self.players["o"].mention)}
+        await edits(msgs, content="ㅤ")
         embed = discord.Embed(color=0xff8800)
-
-        yes_button = ActionRow(
-            Button(
-                style=ButtonStyle.green,
-                label="Oui",
-                custom_id="y"
-            )
-        )
         yes_no_button = ActionRow(
             Button(
                 style=ButtonStyle.green,
@@ -111,26 +129,6 @@ class Game:
                 custom_id="de"
             )
         )
-        embed = discord.Embed(color=0xff8800)
-        embed.set_footer(text="This game was made by Jnath#5924")
-        embed.add_field(name="Belote", value="ㅤ")
-        for i in self.players.keys():
-            embed = self.get_ready_msg(embed, i)
-            await edits(msgs, content="", embed=embed)
-            await msgs[i].edit(components=[yes_button])
-
-            def check(inter):
-                if inter.message.id == msgs[i].id and self.players[i] == inter.author:
-                    self.p_to_inter[i] = inter
-                    return True
-                return False
-
-            c_i = await msgs[i].wait_for_button_click(check)
-            await c_i.reply(content="a", type=6)
-
-            await msgs[i].edit(components=[])
-            embed = self.get_ready_msg(embed, i)
-
         embed = discord.Embed(color=0x37ff00)
         embed.set_footer(text="This game was made by Jnath#5924")
         embed.add_field(name="Belote", value="ㅤ")
@@ -220,10 +218,11 @@ class Game:
                                          ")",
                                    inline=True)
                 for ite in self.players:
-                    await msgs[ite].edit(embed=self.get_game_message(embed, card_played, ite))
+                    await msgs[ite].edit(embed=get_game_message(embed, card_played, ite))
                 await msgs[it].edit(components=card.to_buttons(self.hand_card[it],
                                                                card.get_playable(self.hand_card[it],
-                                                                                 card_color)))
+                                                                                 card_color,
+                                                                                 list(card_played.values()))))
 
                 def check(inter):
                     b_id = inter.clicked_button.custom_id.split("-")
@@ -245,50 +244,9 @@ class Game:
                     card_color = c_id_to_c[inter.clicked_button.custom_id.split("-")[0]]
                 await inter.reply(content="c", type=6)
             next_player_to_play = card_played[str(card.beats(card_color, list(card_played.values())))]
-            print(self.hand_card)
 
         for msg in msgs.values():
             await msg.channel.delete()
-
-    def get_ready_msg(self, embed, i):
-        embed.set_field_at(index=0,
-                           name="Belote",
-                           value="ㅤ" +
-                                 "\nJoueur Nord : " + (
-                                     "[READY]" if "n" in self.p_to_inter else "[NOT READY]") +
-                                 "\nJoueur Sud : " + (
-                                     "[READY]" if "s" in self.p_to_inter else "[NOT READY]") +
-                                 "\nJoueur Est : " + (
-                                     "[READY]" if "e" in self.p_to_inter else "[NOT READY]") +
-                                 "\nJoueur Ouest : " + (
-                                     "[READY]" if "o" in self.p_to_inter else "[NOT READY]") +
-                                 "\n\n" + id_to_totalname[i] + " est tu pret"
-                           )
-        return embed
-
-    def get_game_message(self, embed, val, i):
-        embed.set_field_at(index=0,
-                           name="Belote",
-                           value="ㅤ" +
-                                 "\nㅤㅤㅤㅤ" + (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
-                                             card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
-                                             if pos_to_relative_pos[i]["n"] in val else
-                                             "ㅤㅤ") +
-                                 "\n\n" + (val[pos_to_relative_pos[i]["o"]].color.value["emoji"] +
-                                           card.nomber_to_name[val[pos_to_relative_pos[i]["o"]].nomber]
-                                           if pos_to_relative_pos[i]["o"] in val else
-                                           "ㅤㅤ") + "\nㅤㅤㅤㅤㅤㅤㅤㅤ" +
-                                 (val[pos_to_relative_pos[i]["e"]].color.value["emoji"] +
-                                  card.nomber_to_name[val[pos_to_relative_pos[i]["e"]].nomber]
-                                  if pos_to_relative_pos[i]["e"] in val else
-                                  "ㅤㅤ") +
-                                 "\n\nㅤㅤㅤㅤ" + (
-                                     val[pos_to_relative_pos[i]["s"]].color.value["emoji"] +
-                                     card.nomber_to_name[val[pos_to_relative_pos[i]["s"]].nomber]
-                                     if pos_to_relative_pos[i]["s"] in val else
-                                     "ㅤㅤ") + "\n"
-                           )
-        return embed
 
     def distribue(self, card, player=None):
         if player is None:
