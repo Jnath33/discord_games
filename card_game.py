@@ -79,6 +79,10 @@ class Game:
 
     async def start(self):
 
+        player_to_team = {"n": "ns", "s": "ns", "o": "oe", "e": "oe"}
+        teams_score = {"global": {"ns": 0, "oe": 0},
+                       "current": {"ns": 0, "oe": 0}}
+
         print(f"Game {self.id} is starting")
         msgs = {"n": await self.channels["n"].send(self.players["n"].mention),
                 "s": await self.channels["s"].send(self.players["s"].mention),
@@ -239,7 +243,10 @@ class Game:
                     return False
 
                 inter = await msgs[it].wait_for_button_click(check)
-                await msgs[it].edit(components=card.to_buttons(self.hand_card[it], []))
+                if len(self.hand_card[it]) != 0:
+                    await msgs[it].edit(components=card.to_buttons(self.hand_card[it], []))
+                else:
+                    await msgs[it].edit(components=[])
                 if card_color is None:
                     card_color = c_id_to_c[inter.clicked_button.custom_id.split("-")[0]]
                 await inter.reply(content="c", type=6)
