@@ -175,4 +175,5 @@ async def rps(ctx, *args):
 
 
 # start the bot
-bot.run("ODkwMzIyMjc0MDA2MjEyNjI4.YUuHOw.7YrM536v_LEDX9lko7O8_cJkvkk")
+with open("TOKEN", "r") as f:
+    bot.run(f.read())
