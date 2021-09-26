@@ -305,6 +305,7 @@ class Game:
                 self.cards += f_card_list
                 self.teams_score["current"][player_to_team[p_win]] += card.get_points(list(card_played.values()))
             # calculate point
+            self.teams_score["current"][player_to_team[next_player_to_play]] += 10
             if self.teams_score["current"][player_to_team[who_take_trump]] < self.teams_score["current"][
                 player_to_team[
                     get_next[who_take_trump]]]:
@@ -312,7 +313,6 @@ class Game:
                 self.teams_score["current"][player_to_team[get_next[who_take_trump]]] = 162
             elif self.teams_score["current"][player_to_team[who_take_trump]] == 162:
                 self.teams_score["current"][player_to_team[who_take_trump]] = 252
-            self.teams_score["current"][player_to_team[next_player_to_play]] += 10
             self.teams_score["global"]["ns"] += self.teams_score["current"]["ns"]
             self.teams_score["current"]["ns"] = 0
             self.teams_score["global"]["eo"] += self.teams_score["current"]["eo"]
@@ -335,8 +335,8 @@ class Game:
         # send win message
         win_embed = discord.Embed(color=0x37ff00)
         win_embed.add_field(name="Victoire",
-                            value="ㅤ\nVictoire de r_list'équipe " +
-                                  ("NS " + self.players["n"].mention + " " + self.players["s"].mantion
+                            value="ㅤ\nVictoire de l'équipe " +
+                                  ("NS " + self.players["n"].mention + " " + self.players["s"].mention
                                    if self.teams_score["global"]["ns"] > self.teams_score["global"]["eo"] else
                                    "EO " + self.players["e"].mention + self.players["o"].mention) +
                                   "\nㅤNS : " + str(self.teams_score["global"]["ns"]) +
