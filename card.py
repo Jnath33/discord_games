@@ -8,14 +8,27 @@ class Color(Enum):
     CARREAUX = {"id": "ca", "emoji": ":diamonds:", "uemoji": "♦️", "int": 2}
     TREFLE = {"id": "tr", "emoji": ":clubs:", "uemoji": "♣️", "int": 3}
     PIQUE = {"id": "pi", "emoji": ":spades:", "uemoji": "♠️", "int": 4}
+    VOID = {"id": "void", "emoji": ":no_entry_sign:", "uemoji": "🚫", "int": 0}
 
 
 to_atout = {7: 1, 8: 2, 12: 3, 13: 4, 10: 5, 1: 6, 9: 7, 11: 8}
 to_normal = {7: 1, 8: 2, 9: 3, 11: 4, 12: 5, 13: 6, 10: 7, 1: 8}
 atout_point = {7: 0, 8: 0, 9: 14, 10: 10, 11: 20, 12: 3, 13: 4, 1: 11}
 normal_point = {7: 0, 8: 0, 9: 0, 10: 10, 11: 2, 12: 3, 13: 4, 1: 11}
-atout_color = None
+atout_color = {}
 nomber_to_name = {7: "7", 8: "8", 9: "9", 10: "10", 11: "Valet", 12: "Dame", 13: "Roi", 1: "As"}
+
+
+def get_atout_color(id):
+    if not id in atout_color:
+        atout_color[id] = Color.VOID
+    return atout_color[id]
+
+def set_atout_color(id, color):
+    atout_color[id] = color
+
+def del_atout_color(id):
+    del atout_color[id]
 
 
 def to_buttons(card_list, autorized_button):
@@ -39,8 +52,10 @@ def to_buttons(card_list, autorized_button):
     return raws
 
 
-def get_playable(card_list, color, cards_nv):
+def get_playable(card_list, color, card_played, teamate):
+    all_card = False
     cards = []
+    cards_nv = list(card_played.values())
     for card in cards_nv:
         if type(card) is Card:
             if card.color == atout_color:
@@ -61,6 +76,8 @@ def get_playable(card_list, color, cards_nv):
             for card in card_list:
                 if card.color == atout_color:
                     can_play.append(card)
+                    if teamate in card_played and str(beats(color, list(card_played.values()))) == str(card_played[teamate]):
+                        all_card = True
         n_can_play = []
         if b_att is not None:
             for card in can_play:
@@ -68,7 +85,8 @@ def get_playable(card_list, color, cards_nv):
                     n_can_play.append(card)
         if len(n_can_play) != 0:
             can_play = n_can_play
-    if len(can_play) == 0:
+    if len(can_play) == 0 or all_card:
+        can_play = []
         for card in card_list:
             can_play.append(card)
     return [str(i) for i in can_play]
@@ -146,7 +164,7 @@ def beats(color_start, cards_nv):
         if type(card) is Card:
             cards.append(card)
     c_best = cards[0]
-    for i in range(3):
+    for i in range(len(cards)-1):
         if c_best.beat(color_start, cards[i + 1]):
             print(cards[i + 1])
             c_best = cards[i + 1]

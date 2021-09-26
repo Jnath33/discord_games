@@ -43,7 +43,7 @@ async def on_message_delete(message):
 
 
 @bot.command(aliases=["card", "card_game"])
-async def cards(ctx, *args):
+async def cards(ctx, point: int = 1000):
     # Create lobby and wait the four player join
     # after create the game and start it
     joins_button = ActionRow(
@@ -133,7 +133,7 @@ async def cards(ctx, *args):
         else:
             await j_msg.edit(embed=embed)
 
-    game = card_game.Game(games_player, game_player_inter, ctx)
+    game = card_game.Game(games_player, game_player_inter, ctx, j_msg, point)
     if game.can_start:
         await game.end_init()
         await j_msg.edit(components=[], content="La game démarre regarde le channel sur le coté")
