@@ -54,6 +54,7 @@ class Game:
                 custom_id="y"
             )
         )
+        embed = discord.Embed(color=0xff8800)
         embed.set_footer(text="This game was made by Jnath#5924")
         embed.add_field(name="Belote", value="ㅤ")
         for i in self.players.keys():
@@ -73,12 +74,16 @@ class Game:
             await msgs[i].edit(components=[])
             embed = self.get_ready_msg(embed, i)
 
+        embed = discord.Embed(color=0x37ff00)
+        embed.set_footer(text="This game was made by Jnath#5924")
+        embed.add_field(name="Belote", value="ㅤ")
         await self.edits_game_message(embed,
                                       {"n": card.Card(card.Color.CARREAUX, 11, self.players["n"]),
                                        "e": card.Card(card.Color.COEUR, 8, self.players["e"]),
                                        "s": card.Card(card.Color.CARREAUX, 10, self.players["s"])},
                                       msgs)
-        await edits(msgs, content="", embed=embed, components=[])
+
+        await edits(msgs, components=card.to_buttons([card.Card(card.Color.CARREAUX, 10, None)]))
 
     def get_ready_msg(self, embed, i):
         embed.set_field_at(index=0,
@@ -105,18 +110,18 @@ class Game:
                                                  card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
                                                  if pos_to_relative_pos[i]["n"] in val else
                                                  "ㅤㅤ") +
-                                     "\n\n" + (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
-                                               card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
-                                               if pos_to_relative_pos[i]["n"] in val else
+                                     "\n\n" + (val[pos_to_relative_pos[i]["o"]].color.value["emoji"] +
+                                               card.nomber_to_name[val[pos_to_relative_pos[i]["o"]].nomber]
+                                               if pos_to_relative_pos[i]["o"] in val else
                                                "ㅤㅤ") + "\nㅤㅤㅤㅤㅤㅤㅤㅤ" +
-                                     (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
-                                      card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
-                                      if pos_to_relative_pos[i]["n"] in val else
+                                     (val[pos_to_relative_pos[i]["e"]].color.value["emoji"] +
+                                      card.nomber_to_name[val[pos_to_relative_pos[i]["e"]].nomber]
+                                      if pos_to_relative_pos[i]["e"] in val else
                                       "ㅤㅤ") +
-                                     "\n\nㅤㅤㅤ" + (
-                                         val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
-                                         card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
-                                         if pos_to_relative_pos[i]["n"] in val else
+                                     "\n\nㅤㅤㅤㅤ" + (
+                                         val[pos_to_relative_pos[i]["s"]].color.value["emoji"] +
+                                         card.nomber_to_name[val[pos_to_relative_pos[i]["s"]].nomber]
+                                         if pos_to_relative_pos[i]["s"] in val else
                                          "ㅤㅤ") + "\n"
                                )
             await msgs[i].edit(embed=embed)
