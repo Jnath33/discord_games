@@ -4,7 +4,7 @@ from dislash import ButtonStyle, Button, ActionRow
 
 
 class Color(Enum):
-    COEUR = {"id": "co", "emoji": ":heart:","uemoji": "❤️️", "int": 1}
+    COEUR = {"id": "co", "emoji": ":heart:","uemoji": "❤️", "int": 1}
     CARREAUX = {"id": "ca", "emoji": ":diamonds:","uemoji": "♦️", "int": 2}
     TREFLE = {"id": "tr", "emoji": ":clubs:","uemoji": "♣️", "int": 3}
     PIQUE = {"id": "pi", "emoji": ":spades:","uemoji": "♠️", "int": 4}
@@ -16,7 +16,7 @@ atout_color = None
 nomber_to_name = {7: "7", 8: "8", 9: "9", 10: "10", 11: "Valet", 12: "Dame", 13: "Roi", 1: "As"}
 
 
-def to_buttons(card_list, card_color=None):
+def to_buttons(card_list, autorized_button):
     card_list.sort()
     card_buttons = []
     for card in card_list:
@@ -25,17 +25,14 @@ def to_buttons(card_list, card_color=None):
             label=nomber_to_name[card.nomber],
             custom_id=str(card),
             emoji=card.color.value["uemoji"],
+            disabled=True
         ))
     raws = []
-    for i in range(int((len(card_buttons)-1)/5)-1):
+    for i in range(int((len(card_buttons)-1)/5)+1):
         raws.append(ActionRow(*card_buttons[i*5:min((i+1)*5, len(card_buttons))]))
-        if card_color is not None:
-            for it in range(min((i+1)*5, len(card_buttons))):
-                b = raws[i].components[it]
-                if not b.custom_id.split("-")[0] in [card_color[id]]:
-                    raws[i].disable_buttons(it)
-                else:
-                    raws[i].enable_buttons(it)
+        for it in range(min((i+1)*5, len(card_buttons)-i*5)):
+            if raws[i].components[it].custom_id in autorized_button:
+                raws[i].enable_buttons(it)
 
     return raws
 
