@@ -39,7 +39,7 @@ async def morpion(ctx):
     global c_id
     t_id, c_id = c_id, c_id + 1
     with open("bot1/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "test", "c_id": ctx.channel.id, "args": [ctx.author.id]}, separators=(',', ':')))
+        f.write(json.dumps({"cmd": "morpion", "c_id": ctx.channel.id, "args": [ctx.message.id]}, separators=(',', ':')))
 
 
 @bot.command(aliases=["card", "card_game"])
@@ -47,7 +47,7 @@ async def cards(ctx, point: int = 1000):
     global c_id
     t_id, c_id = c_id, c_id + 1
     with open("bot1/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "test", "c_id": ctx.channel.id, "args": [point]}, separators=(',', ':')))
+        f.write(json.dumps({"cmd": "card", "c_id": ctx.channel.id, "args": [point]}, separators=(',', ':')))
 
 
 # create rps cmd with two aliases chifoumi and RPS
@@ -56,7 +56,7 @@ async def rps(ctx, *args):
     global c_id
     t_id, c_id = c_id, c_id + 1
     with open("bot1/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "test", "c_id": ctx.channel.id, "args": [ctx.author, *args]}, separators=(',', ':')))
+        f.write(json.dumps({"cmd": "rps", "c_id": ctx.channel.id, "args": [ctx.author, *args]}, separators=(',', ':')))
 
 
 bot.run(bot_settings["token"])

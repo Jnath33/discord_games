@@ -53,9 +53,10 @@ async def update():
 
 
 @command
-async def morpion(c_id, author_id):
+async def morpion(c_id, msg_id):
     ctx = bot.get_channel(c_id)
-    author = bot.get_user(author_id)
+    msg = await ctx.fetch_message(msg_id)
+    author = msg.author
     embed = discord.Embed(title="Waiting", color=0xff8800)
 
     embed.add_field(name="ㅤ", value=author.mention + " attend un autre joueur pour jouer au morpion")
@@ -66,7 +67,7 @@ async def morpion(c_id, author_id):
     def check(inter):
         return inter.message.id == msg.id  # and inter.author != ctx.author
 
-    inter = await ctx.wait_for_button_click(check)
+    inter = await msg.wait_for_button_click(check)
     await inter.reply(content='c', type=6)
     await msg.edit(content="ㅤ", components=[], embed=None)
 
@@ -182,7 +183,8 @@ async def card(c_id, point):
 @command
 async def rps(c_id, author_id, *args):
     ctx = bot.get_channel(c_id)
-    author = bot.get_user(author_id)
+    await ctx.send("test")
+    author = ctx.guild.get_member(author_id)
     # Verify if is multiplayer or solo
     if len(args) > 0 and args[0] in ["m", "multi", "multijoueur", "vs", "versus", "contre"]:
         # send the message
