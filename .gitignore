@@ -2,3 +2,4 @@
 .idea
 __pycache__/
 TOKEN
+settings/settings.json
