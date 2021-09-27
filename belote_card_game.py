@@ -4,7 +4,7 @@ import random
 import discord
 from dislash import ActionRow, Button, ButtonStyle
 
-import card
+import belote_card
 
 # set all the dic
 ids = {}
@@ -17,10 +17,10 @@ get_next = {"n": "e", "e": "s", "s": "o", "o": "n"}
 get_teammate = {"n": "s", "s": "n", "o": "e", "e": "o"}
 player_to_team = {"n": "ns", "s": "ns", "o": "eo", "e": "eo"}
 c_id_to_c = {
-    "co": card.Color.COEUR,
-    "ca": card.Color.CARREAUX,
-    "tr": card.Color.TREFLE,
-    "pi": card.Color.PIQUE,
+    "co": belote_card.Color.COEUR,
+    "ca": belote_card.Color.CARREAUX,
+    "tr": belote_card.Color.TREFLE,
+    "pi": belote_card.Color.PIQUE,
     None: None
 }
 
@@ -31,20 +31,20 @@ def get_game_message(embed, val, i):
                        name="Belote",
                        value="ㅤ" +
                              "\nㅤㅤㅤㅤ" + (val[pos_to_relative_pos[i]["n"]].color.value["emoji"] +
-                                         card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
+                                         belote_card.nomber_to_name[val[pos_to_relative_pos[i]["n"]].nomber]
                                          if pos_to_relative_pos[i]["n"] in val else
                                          "ㅤㅤ") +
                              "\n\n" + (val[pos_to_relative_pos[i]["o"]].color.value["emoji"] +
-                                       card.nomber_to_name[val[pos_to_relative_pos[i]["o"]].nomber]
+                                       belote_card.nomber_to_name[val[pos_to_relative_pos[i]["o"]].nomber]
                                        if pos_to_relative_pos[i]["o"] in val else
                                        "ㅤㅤ") + "\nㅤㅤㅤㅤㅤㅤㅤㅤ" +
                              (val[pos_to_relative_pos[i]["e"]].color.value["emoji"] +
-                              card.nomber_to_name[val[pos_to_relative_pos[i]["e"]].nomber]
+                              belote_card.nomber_to_name[val[pos_to_relative_pos[i]["e"]].nomber]
                               if pos_to_relative_pos[i]["e"] in val else
                               "ㅤㅤ") +
                              "\n\nㅤㅤㅤㅤ" + (
                                  val[pos_to_relative_pos[i]["s"]].color.value["emoji"] +
-                                 card.nomber_to_name[val[pos_to_relative_pos[i]["s"]].nomber]
+                                 belote_card.nomber_to_name[val[pos_to_relative_pos[i]["s"]].nomber]
                                  if pos_to_relative_pos[i]["s"] in val else
                                  "ㅤㅤ") + "\n"
                        )
@@ -152,7 +152,7 @@ class Game:
                         value="ㅤ",
                         inline=False)
         embed.add_field(name="Score",
-                        value="ㅤ\n\n\ntrumps : " + card.get_trump_color(self.id).value["emoji"] + "\n",
+                        value="ㅤ\n\n\ntrumps : " + belote_card.get_trump_color(self.id).value["emoji"] + "\n",
                         inline=True)
         embed.add_field(name="C'est le tour de",
                         value="ㅤ",
@@ -167,7 +167,7 @@ class Game:
             # the the first field to the card proposed
             embed.set_field_at(0,
                                name="Belote",
-                               value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + card.nomber_to_name[
+                               value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + belote_card.nomber_to_name[
                                    self.cards[0].nomber] +
                                      "\nㅤ")
             # edits the messages with the new embed
@@ -181,10 +181,10 @@ class Game:
             # first turn
             while run:
                 for i in self.players:
-                    await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
+                    await msgs[i].edit(components=belote_card.to_buttons(self.hand_card[i], []))
 
                 for i in start_player_to_play_list(start_player):
-                    await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []) + [yes_no_button])
+                    await msgs[i].edit(components=belote_card.to_buttons(self.hand_card[i], []) + [yes_no_button])
 
                     def check(inter_first_turn):
                         return inter_first_turn.message.id == msgs[i].id and self.players[i] == inter_first_turn.author
@@ -192,9 +192,9 @@ class Game:
                     inter = await msgs[i].wait_for_button_click(check)
                     await inter.reply(content="a", type=6)
 
-                    await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
+                    await msgs[i].edit(components=belote_card.to_buttons(self.hand_card[i], []))
                     if inter.clicked_button.custom_id == "y":
-                        card.set_trump_color(self.id, self.cards[0].color)
+                        belote_card.set_trump_color(self.id, self.cards[0].color)
                         p_second = False
                         run = False
                         who_take_trump = i
@@ -204,7 +204,7 @@ class Game:
                 # second turn
                 if p_second:
                     for i in start_player_to_play_list(start_player):
-                        await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []) + [two_button])
+                        await msgs[i].edit(components=belote_card.to_buttons(self.hand_card[i], []) + [two_button])
 
                         def check(inter_second_turn):
                             return inter_second_turn.message.id == msgs[i].id and self.players[i] == \
@@ -213,9 +213,9 @@ class Game:
                         inter = await msgs[i].wait_for_button_click(check)
                         await inter.reply(content="a", type=6)
 
-                        await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
+                        await msgs[i].edit(components=belote_card.to_buttons(self.hand_card[i], []))
                         if inter.clicked_button.custom_id != "de":
-                            card.set_trump_color(id, c_id_to_c[inter.clicked_button.custom_id])
+                            belote_card.set_trump_color(id, c_id_to_c[inter.clicked_button.custom_id])
                             run = False
                             who_take_trump = i
                             self.distribute(1, i)
@@ -229,7 +229,7 @@ class Game:
                     self.distribute(5)
                     embed.set_field_at(0,
                                        name="Belote",
-                                       value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + card.nomber_to_name[
+                                       value="ㅤ\nㅤ" + self.cards[0].color.value["emoji"] + belote_card.nomber_to_name[
                                            self.cards[0].nomber] + "\nㅤ")
                     await edits(msgs, embed=embed)
 
@@ -239,13 +239,13 @@ class Game:
             bonus = {"ns": 0, "eo": 0}
             for i in self.players:
                 self.distribute(8 - len(self.hand_card[i]), i)
-                if card.Card(
-                        card.get_trump_color(self.id), 12, card.get_trump_color(self.id)
-                ) in self.hand_card[i] and card.Card(
-                    card.get_trump_color(self.id), 13, card.get_trump_color(self.id)
+                if belote_card.Card(
+                        belote_card.get_trump_color(self.id), 12, belote_card.get_trump_color(self.id)
+                ) in self.hand_card[i] and belote_card.Card(
+                    belote_card.get_trump_color(self.id), 13, belote_card.get_trump_color(self.id)
                 ) in self.hand_card[i]:
                     bonus[player_to_team[i]] += 20
-                await msgs[i].edit(components=card.to_buttons(self.hand_card[i], []))
+                await msgs[i].edit(components=belote_card.to_buttons(self.hand_card[i], []))
 
             # set the next player who played to the start player
             next_player_to_play = start_player
@@ -263,48 +263,49 @@ class Game:
                                        inline=True)
                     for ite in self.players:
                         await msgs[ite].edit(embed=get_game_message(embed, card_played, ite))
-                    await msgs[it].edit(components=card.to_buttons(self.hand_card[it],
-                                                                   card.get_playable(self.hand_card[it],
-                                                                                     card_color,
-                                                                                     card_played,
-                                                                                     get_teammate[it])))
+                    await msgs[it].edit(components=belote_card.to_buttons(self.hand_card[it],
+                                                                          belote_card.get_playable(self.hand_card[it],
+                                                                                                   card_color,
+                                                                                                   card_played,
+                                                                                                   get_teammate[it])))
 
                     def check(inter_choose_card):
                         b_id = inter_choose_card.clicked_button.custom_id.split("-")
                         if inter_choose_card.message.id == msgs[it].id and self.players[it] == inter_choose_card.author:
-                            card_played[it] = card.Card(c_id_to_c[b_id[0]], int(b_id[1]), card.get_trump_color(self.id))
+                            card_played[it] = belote_card.Card(c_id_to_c[b_id[0]], int(b_id[1]), belote_card.get_trump_color(self.id))
                             c_player_hand = self.hand_card[it]
                             d_n = None
                             for c in range(len(c_player_hand)):
                                 if str(c_player_hand[c]) == inter_choose_card.clicked_button.custom_id:
                                     d_n = c
                             del self.hand_card[it][d_n]
-                            card_played[str(card.Card(c_id_to_c[b_id[0]],
-                                                      int(b_id[1]),
-                                                      card.get_trump_color(self.id)))] = it
+                            card_played[str(belote_card.Card(c_id_to_c[b_id[0]],
+                                                             int(b_id[1]),
+                                                             belote_card.get_trump_color(self.id)))] = it
                             return True
                         return False
 
                     inter = await msgs[it].wait_for_button_click(check)
                     if len(self.hand_card[it]) != 0:
-                        await msgs[it].edit(components=card.to_buttons(self.hand_card[it], []))
+                        await msgs[it].edit(components=belote_card.to_buttons(self.hand_card[it], []))
                     else:
                         await msgs[it].edit(components=[])
                     if card_color is None:
                         card_color = c_id_to_c[inter.clicked_button.custom_id.split("-")[0]]
                     await inter.reply(content="c", type=6)
-                p_win = card_played[str(card.beats(card_color, list(card_played.values())))]
+                p_win = card_played[str(belote_card.beats(card_color, list(card_played.values())))]
                 next_player_to_play = p_win
                 f_card_list = []
                 for ite in self.players:
                     await msgs[ite].edit(embed=get_game_message(embed, card_played, ite))
                 await asyncio.sleep(0.5)
                 for ca in list(card_played.values()):
-                    if type(ca) is card.Card:
+                    if type(ca) is belote_card.Card:
                         f_card_list.append(ca)
                 self.cards += f_card_list
-                self.teams_score["current"][player_to_team[p_win]] += card.get_points(list(card_played.values()))
+                self.teams_score["current"][player_to_team[p_win]] += belote_card.get_points(list(card_played.values()))
             # calculate point
+            self.teams_score["current"][player_to_team[next_player_to_play]] += 10
             if self.teams_score["current"][player_to_team[who_take_trump]] < self.teams_score["current"][
                 player_to_team[
                     get_next[who_take_trump]]]:
@@ -312,7 +313,6 @@ class Game:
                 self.teams_score["current"][player_to_team[get_next[who_take_trump]]] = 162
             elif self.teams_score["current"][player_to_team[who_take_trump]] == 162:
                 self.teams_score["current"][player_to_team[who_take_trump]] = 252
-            self.teams_score["current"][player_to_team[next_player_to_play]] += 10
             self.teams_score["global"]["ns"] += self.teams_score["current"]["ns"]
             self.teams_score["current"]["ns"] = 0
             self.teams_score["global"]["eo"] += self.teams_score["current"]["eo"]
@@ -335,15 +335,15 @@ class Game:
         # send win message
         win_embed = discord.Embed(color=0x37ff00)
         win_embed.add_field(name="Victoire",
-                            value="ㅤ\nVictoire de r_list'équipe " +
-                                  ("NS " + self.players["n"].mention + " " + self.players["s"].mantion
+                            value="ㅤ\nVictoire de l'équipe " +
+                                  ("NS " + self.players["n"].mention + " " + self.players["s"].mention
                                    if self.teams_score["global"]["ns"] > self.teams_score["global"]["eo"] else
                                    "EO " + self.players["e"].mention + self.players["o"].mention) +
                                   "\nㅤNS : " + str(self.teams_score["global"]["ns"]) +
                                   "\nㅤEO " + str(self.teams_score["global"]["eo"])
                             )
         await self.j_msg.edit(embed=win_embed)
-        card.del_trump_color(self.id)
+        belote_card.del_trump_color(self.id)
         del ids[self.id]
 
     # the function to distribute card to player
@@ -368,24 +368,24 @@ class Game:
                                  ") : " + str(score["global"]["ns"]) +
                                  "\nEO (" + self.players["e"].name + ", " + self.players["o"].name +
                                  ") : " + str(score["global"]["eo"]) +
-                                 "\n\n**trumps** : " + card.get_trump_color(self.id).value["emoji"] + "\n",
+                                 "\n\n**Atout** : " + belote_card.get_trump_color(self.id).value["emoji"] + "\n",
                            inline=True)
         return embed
 
     # make a list with all the card
     def make_cards_list(self):
-        t_cards = [[card.Card(i, m, card.get_trump_color(self.id)) for m in range(7, 14)] for i in [card.Color.COEUR,
-                                                                     card.Color.TREFLE,
-                                                                     card.Color.CARREAUX,
-                                                                     card.Color.PIQUE]]
+        t_cards = [[belote_card.Card(i, m, belote_card.get_trump_color(self.id)) for m in range(7, 14)] for i in [belote_card.Color.COEUR,
+                                                                                                                  belote_card.Color.TREFLE,
+                                                                                                                  belote_card.Color.CARREAUX,
+                                                                                                                  belote_card.Color.PIQUE]]
         self.cards = []
         for i in t_cards:
             self.cards += i
-        for i in [card.Color.COEUR,
-                  card.Color.TREFLE,
-                  card.Color.CARREAUX,
-                  card.Color.PIQUE]:
-            self.cards.append(card.Card(i, 1, card.get_trump_color(self.id)))
+        for i in [belote_card.Color.COEUR,
+                  belote_card.Color.TREFLE,
+                  belote_card.Color.CARREAUX,
+                  belote_card.Color.PIQUE]:
+            self.cards.append(belote_card.Card(i, 1, belote_card.get_trump_color(self.id)))
 
         random.shuffle(self.cards)
 

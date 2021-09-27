@@ -3,8 +3,8 @@ import discord
 from discord.ext import commands
 from dislash import InteractionClient, ActionRow, Button, ButtonStyle
 
-import card
-import card_game
+import belote_card
+import belote_card_game
 import rps_game
 import morpion_game
 
@@ -20,7 +20,6 @@ join_button = ActionRow(
         custom_id="join"
     )
 )
-
 
 
 async def clear_game_channel():
@@ -52,14 +51,13 @@ async def morpion(ctx):
     msg = await ctx.send(embed=embed, components=[join_button])
 
     def check(inter):
-        return inter.message.id == msg.id# and inter.author != ctx.author
+        return inter.message.id == msg.id  # and inter.author != ctx.author
 
     inter = await ctx.wait_for_button_click(check)
     await inter.reply(content='c', type=6)
     await msg.edit(content="ㅤ", components=[], embed=None)
 
     await morpion_game.Game(msg, [ctx.author, inter.author]).start()
-
 
 
 @bot.command(aliases=["card", "card_game"])
@@ -158,7 +156,7 @@ async def cards(ctx, point: int = 1000):
             await j_msg.edit(embed=embed)
 
     # start the game
-    game = card_game.Game(games_player, game_player_inter, ctx, j_msg, point)
+    game = belote_card_game.Game(games_player, game_player_inter, ctx, j_msg, point)
     if game.can_start:
         await game.end_init()
         await j_msg.edit(components=[], content="La game démarre regarde le channel sur le coté")

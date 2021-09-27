@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 import random
 
@@ -56,7 +57,7 @@ class Game:
             await self.ctx.edit(content="ㅤ" +
                                         self.players[self.c_player].mention +
                                         " à ton tour (" +
-                                        int_to_emoji[self.c_player+1] + ")"
+                                        int_to_emoji[self.c_player + 1] + ")"
                                 , components=self.b_board)
 
             def check(inter):
@@ -80,10 +81,18 @@ class Game:
                                                     int_to_emoji[self.board[i[0]][i[1]].value] + ")" +
                                                     " Victoire")
                     embed.set_footer(text="This game was made by Jnath#5924")
-                    await self.ctx.edit(embed=embed, components=[])
+                    await self.ctx.edit(content="", embed=embed, components=[])
                     return
 
             self.reverse_c_player()
+        self.update_buttons()
+        await self.ctx.edit(content="ㅤ"
+                            , components=self.b_board)
+        await asyncio.sleep(.5)
+        embed = discord.Embed(title="Égalité", color=0xff0000)
+        embed.add_field(name="ㅤ", value=self.players[0].mention + " à fait une égalité avec" + self.players[1].mention)
+        embed.set_footer(text="This game was made by Jnath#5924")
+        await self.ctx.edit(components=[], embed=embed)
 
     def reverse_c_player(self):
         self.c_player = 1 - self.c_player
