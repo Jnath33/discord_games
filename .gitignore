@@ -3,3 +3,6 @@
 __pycache__/
 TOKEN
 settings/settings.json
+bot*.py
+main-bot.py
+bot*
