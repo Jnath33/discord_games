@@ -36,19 +36,19 @@ def verif_n(n):
 
 # the game classe
 class Game:
-    async def multi(self, ctx, j_inter, msg):
+    async def multi(self, j_inter, msg, author):
         # player 1 choosing
-        await msg.edit(content=ctx.author.name + " choisis ton choix",
+        await msg.edit(content=author.name + " choisis ton choix",
                        components=[rps_buttons])
 
         def check(inter):
             c_1 = inter.message.id == msg.id
-            c_2 = ctx.author == inter.author
+            c_2 = author == inter.author
             if c_1 and not c_2:
                 inter.reply("Vous ne pouvez pas jouer à la place de quelqu'un d'autre", ephemeral=True)
-            return inter.message.id == msg.id and ctx.author == inter.author
+            return inter.message.id == msg.id and author == inter.author
 
-        p_1_inter = await ctx.wait_for_button_click(check)
+        p_1_inter = await msg.wait_for_button_click(check)
         await p_1_inter.reply(content="cequetuveux", type=6)
         # player 2 choosing
         await msg.edit(components=[])
@@ -58,7 +58,7 @@ class Game:
         def check(inter):
             return inter.message.id == msg.id and j_inter.author == inter.author
 
-        p_2_inter = await ctx.wait_for_button_click(check)
+        p_2_inter = await msg.wait_for_button_click(check)
         await p_2_inter.reply(content="cequetuveux", type=6)
 
         # get's id's
@@ -81,9 +81,9 @@ class Game:
         else:
             await msg.edit(content=num_to_emote[name_to_num[p_1_cho]] + " VS " +
                                    num_to_emote[name_to_num[p_2_cho]] + " --> VICTOIRE de " +
-                                   ctx.author.name + " J1")
+                                   author.name + " J1")
 
-    async def solo(self, ctx):
+    async def solo(self, ctx, author):
         # Send the message with buttons
         msg = await ctx.send(
             "(:rock:) Pierre, (:newspaper:) Papier, (:scissors:) ciseaux choisis le tien",
@@ -92,9 +92,9 @@ class Game:
 
         # Wait for the player select is signe
         def check(inter):
-            return inter.message.id == msg.id and ctx.author == inter.author
+            return inter.message.id == msg.id and author == inter.author
 
-        inter = await ctx.wait_for_button_click(check)
+        inter = await msg.wait_for_button_click(check)
 
         # get cliqued button
         res = inter.clicked_button.custom_id
