@@ -5,6 +5,7 @@ import sys
 import json
 from os import walk, remove
 from dislash import InteractionClient, ActionRow, Button, ButtonStyle
+from discord.ext import commands
 
 import belote_card_game
 import morpion_game
@@ -12,7 +13,7 @@ import rps_game
 
 bot_settings = json.loads(sys.argv[1])
 
-bot = discord.Client()
+bot = commands.Bot(command_prefix="!s_b")
 
 # Init the interaction client in the bot
 
