@@ -5,23 +5,68 @@ import random
 
 import discord
 from discord.ext import commands
-from dislash import InteractionClient, ActionRow, Button, ButtonStyle
-
-import belote_card_game
-import rps_game
-import morpion_game
 
 # Init the bot
 
 c_id = 0
+bots_member_serv = {}
+total_bots_member_serv = 0
 
+with open("settings.json", "r") as f:
+    g_settings = json.load(f)
 bot_settings = json.loads(sys.argv[1])
 bot = commands.Bot(command_prefix='!')
 id_max = int(sys.argv[2])
+mode_to_n_of_bot = {"rps": 0,  # Pierre feuille ciseaux
+                    "morp": 1,  # Morpion
+                    "p4": 2,  # Puissance 4
+                    "c_name": 3,  # Code name
+                    "belote": 4,  # Bellote
+                    "presi": 5,  # Président
+                    "u_cover": 6,  # Undercover
+                    "dame": 7,  # Dame
+                    "chess": 8,  # Échec
+                    "ksuv": 9  # Ksuv (jeu histoire)
+                    }
+
+guild_to_bots = {}
 
 
-def get_r_id():
+async def game_can_be_start(mode, guild, ctx):
+    if len(guild_to_bots[guild.id]) >= mode_to_n_of_bot[mode]:
+
+    else:
+        await ctx.send("Vous n'avez pas assez de bot !setup")
+
+
+
+for i in range(id_max + 1):
+    bots_member_serv[i] = 0
+
+for s in bot.guilds:
+    for i in range(id_max + 1):
+        bots_member_serv[i] += s.member_count
+
+
+def get_r_id(guild):
     return str(random.randint(0, id_max))
+
+
+def send_command(g_name, ctx, args):
+    global c_id
+    t_id, c_id = c_id, c_id + 1
+    with open("bot" + get_r_id(ctx.guild) + "/data/" + str(c_id) + ".json", "x") as f:
+        f.write(json.dumps({"cmd": g_name, "c_id": ctx.channel.id,
+                            "args": args},
+                           separators=(',', ':')))
+
+
+def register_guild(guild):
+    global guild_to_bot_count
+    guild_to_bot_count[guild.id] = 0
+    for it in g_settings["settings"]:
+        if guild.get_member(int(it["client_id"])) is not None:
+            guild_to_bot_count[guild.id] += 1
 
 
 async def clear_game_channel():
@@ -41,37 +86,23 @@ async def on_ready():
 
 @bot.command(aliases=["p_4", "p4", "power_4", "power4"])
 async def power_four(ctx):
-    global c_id
-    t_id, c_id = c_id, c_id + 1
-    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "p4", "c_id": ctx.channel.id,
-                            "args": [ctx.message.id]},
-                           separators=(',', ':')))
+    send_command("p4", ctx, ctx.message.id)
 
 
 @bot.command(aliases=["morp"])
 async def morpion(ctx):
-    global c_id
-    t_id, c_id = c_id, c_id + 1
-    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "morpion", "c_id": ctx.channel.id, "args": [ctx.message.id]}, separators=(',', ':')))
+    send_command("morp", ctx, [ctx.message.id])
 
 
-@bot.command(aliases=["card", "card_game"])
-async def cards(ctx, point: int = 1000):
-    global c_id
-    t_id, c_id = c_id, c_id + 1
-    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "card", "c_id": ctx.channel.id, "args": [point]}, separators=(',', ':')))
+@bot.command(aliases=["bel", "blt"])
+async def bellote(ctx, point: int = 1000):
+    send_command("belote", ctx, [point])
 
 
 # create rps cmd with two aliases chifoumi and RPS
 @bot.command(aliases=["chifoumi", "RPS"])
 async def rps(ctx, *args):
-    global c_id
-    t_id, c_id = c_id, c_id + 1
-    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
-        f.write(json.dumps({"cmd": "rps", "c_id": ctx.channel.id, "args": [ctx.author, *args]}, separators=(',', ':')))
+    send_command("rps", ctx, [ctx.message.id, *args])
 
 
 bot.run(bot_settings["token"])

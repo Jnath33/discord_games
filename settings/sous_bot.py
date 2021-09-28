@@ -97,7 +97,7 @@ async def morpion(c_id, msg_id):
 
 
 @command
-async def card(c_id, point):
+async def belote(c_id, point):
     ctx = bot.get_channel(c_id)
     # Create lobby and wait the four player join
     # after create the game and start it
@@ -203,10 +203,10 @@ async def card(c_id, point):
 
 
 @command
-async def rps(c_id, author_id, *args):
+async def rps(c_id, msg_id, *args):
     ctx = bot.get_channel(c_id)
-    await ctx.send("test")
-    author = ctx.guild.get_member(author_id)
+    msg = ctx.fetch_message(msg_id)
+    author = msg.author
     # Verify if is multiplayer or solo
     if len(args) > 0 and args[0] in ["m", "multi", "multijoueur", "vs", "versus", "contre"]:
         # send the message
