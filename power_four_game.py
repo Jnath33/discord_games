@@ -34,19 +34,36 @@ class Game:
             Button(
                 style=ButtonStyle.gray,
                 custom_id="2",
-                emoji="2️⃣"
+                emoji="4️⃣"
             ),
             Button(
                 style=ButtonStyle.gray,
                 custom_id="3",
+                emoji="7️⃣"
+            )
+        ), ActionRow(
+            Button(
+                style=ButtonStyle.gray,
+                custom_id="2",
+                emoji="2️⃣"
+            ),
+            Button(
+                style=ButtonStyle.gray,
+                custom_id="6",
                 emoji="3️⃣"
             ),
             Button(
                 style=ButtonStyle.gray,
-                custom_id="4",
-                emoji="4️⃣"
+                custom_id="7",
+                emoji="6️⃣"
             )
         ), ActionRow(
+            Button(
+                style=ButtonStyle.gray,
+                custom_id="d1",
+                emoji="⚫",
+                disabled=True
+            ),
             Button(
                 style=ButtonStyle.gray,
                 custom_id="5",
@@ -54,13 +71,9 @@ class Game:
             ),
             Button(
                 style=ButtonStyle.gray,
-                custom_id="6",
-                emoji="6️⃣"
-            ),
-            Button(
-                style=ButtonStyle.gray,
-                custom_id="7",
-                emoji="7️⃣"
+                custom_id="d2",
+                emoji="⚫",
+                disabled=True
             )
         )]
 
@@ -76,6 +89,8 @@ class Game:
             await inter.reply("c", type=6)
             self.board[int(inter.clicked_button.custom_id) - 1].append(int_to_state[self.c_player + 1])
             self.c_player = 1 - self.c_player
+
+            get_co
 
     def get(self, x, y):
         if len(self.board[x]) > y:
