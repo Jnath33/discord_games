@@ -1,6 +1,7 @@
 # Imports
 import json
 import sys
+import random
 
 import discord
 from discord.ext import commands
@@ -16,6 +17,11 @@ c_id = 0
 
 bot_settings = json.loads(sys.argv[1])
 bot = commands.Bot(command_prefix='!')
+id_max = int(sys.argv[2])
+
+
+def get_r_id():
+    return str(random.randint(0, id_max))
 
 
 async def clear_game_channel():
@@ -37,7 +43,7 @@ async def on_ready():
 async def power_four(ctx):
     global c_id
     t_id, c_id = c_id, c_id + 1
-    with open("bot1/data/" + str(c_id) + ".json", "x") as f:
+    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
         f.write(json.dumps({"cmd": "p4", "c_id": ctx.channel.id,
                             "args": [ctx.message.id]},
                            separators=(',', ':')))
@@ -47,7 +53,7 @@ async def power_four(ctx):
 async def morpion(ctx):
     global c_id
     t_id, c_id = c_id, c_id + 1
-    with open("bot1/data/" + str(c_id) + ".json", "x") as f:
+    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
         f.write(json.dumps({"cmd": "morpion", "c_id": ctx.channel.id, "args": [ctx.message.id]}, separators=(',', ':')))
 
 
@@ -55,7 +61,7 @@ async def morpion(ctx):
 async def cards(ctx, point: int = 1000):
     global c_id
     t_id, c_id = c_id, c_id + 1
-    with open("bot1/data/" + str(c_id) + ".json", "x") as f:
+    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
         f.write(json.dumps({"cmd": "card", "c_id": ctx.channel.id, "args": [point]}, separators=(',', ':')))
 
 
@@ -64,7 +70,7 @@ async def cards(ctx, point: int = 1000):
 async def rps(ctx, *args):
     global c_id
     t_id, c_id = c_id, c_id + 1
-    with open("bot1/data/" + str(c_id) + ".json", "x") as f:
+    with open("bot" + get_r_id() + "/data/" + str(c_id) + ".json", "x") as f:
         f.write(json.dumps({"cmd": "rps", "c_id": ctx.channel.id, "args": [ctx.author, *args]}, separators=(',', ':')))
 
 
