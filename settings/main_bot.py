@@ -14,7 +14,6 @@ import morpion_game
 
 c_id = 0
 
-
 bot_settings = json.loads(sys.argv[1])
 bot = commands.Bot(command_prefix='!')
 
@@ -32,6 +31,16 @@ async def clear_game_channel():
 async def on_ready():
     print("Main Bot IS Ready")
     await clear_game_channel()
+
+
+@bot.command(aliases=["p_4", "p4", "power_4", "power4"])
+async def power_four(ctx):
+    global c_id
+    t_id, c_id = c_id, c_id + 1
+    with open("bot1/data/" + str(c_id) + ".json", "x") as f:
+        f.write(json.dumps({"cmd": "p4", "c_id": ctx.channel.id,
+                            "args": [ctx.message.id]},
+                           separators=(',', ':')))
 
 
 @bot.command(aliases=["morp"])

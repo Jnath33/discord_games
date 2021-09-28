@@ -9,6 +9,7 @@ from discord.ext import commands
 
 import belote_card_game
 import morpion_game
+import power_four_game
 import rps_game
 
 bot_settings = json.loads(sys.argv[1])
@@ -50,6 +51,27 @@ async def update():
                     bot.loop.create_task(commands[data["cmd"]](data["c_id"], *data["args"]))
             remove("bot" + bot_settings["id"] + "/data/" + file)
         await asyncio.sleep(.5)
+
+@command
+async def p4(c_id, msg_id):
+    ctx = bot.get_channel(c_id)
+    msg = await ctx.fetch_message(msg_id)
+    author = msg.author
+    embed = discord.Embed(title="Waiting", color=0xff8800)
+
+    embed.add_field(name="ㅤ", value=author.mention + " attend un autre joueur pour jouer au puissance 4")
+    embed.set_footer(text="This game was made by Jnath#5924")
+
+    msg = await ctx.send(embed=embed, components=[join_button])
+
+    def check(inter):
+        return inter.message.id == msg.id  # and inter.author != ctx.author
+
+    inter = await msg.wait_for_button_click(check)
+    await inter.reply(content='c', type=6)
+    await msg.edit(content="ㅤ", components=[], embed=None)
+
+    await power_four_game.Game(msg, [author, inter.author]).start()
 
 
 @command
