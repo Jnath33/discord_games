@@ -13,7 +13,7 @@ total_bots_member_serv = 0
 guild_to_bots = {}
 
 # loads the setings and launch the bot
-with open("settings.json", "r") as f:
+with open("settings/settings.json", "r") as f:
     g_settings = json.load(f)
 
 bot_settings = json.loads(sys.argv[1])
@@ -52,7 +52,7 @@ def get_r_id(guild):
 
 
 def send_command(g_name, ctx, args):
-    if game_can_be_start(g_name, ctx.guild, ctx):
+    if await game_can_be_start(g_name, ctx.guild, ctx):
         return
     global current_cmd_count
     t_id, current_cmd_count = current_cmd_count, current_cmd_count + 1
