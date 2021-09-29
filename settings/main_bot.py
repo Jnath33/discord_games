@@ -51,25 +51,24 @@ def get_r_id(guild):
     return str(random.randint(0, len(guild_to_bots[guild.id])))
 
 
-def send_command(g_name, ctx, args):
+async def send_command(g_name, ctx, args):
     if await game_can_be_start(g_name, ctx.guild, ctx):
-        return
-    global current_cmd_count
-    t_id, current_cmd_count = current_cmd_count, current_cmd_count + 1
-    with open("bot" + get_r_id(ctx.guild) + "/" +
-              "data/" +
-              str(current_cmd_count) + "-cmd.json", "x") as f:
-        f.write(json.dumps({"cmd": g_name, "c_id": ctx.channel.id,
-                            "args": args},
-                           separators=(',', ':')))
+        global current_cmd_count
+        t_id, current_cmd_count = current_cmd_count, current_cmd_count + 1
+        with open("bot" + get_r_id(ctx.guild) + "/" +
+                  "data/" +
+                  str(current_cmd_count) + "-cmd.json", "x") as f:
+            f.write(json.dumps({"cmd": g_name, "c_id": ctx.channel.id,
+                                "args": args},
+                               separators=(',', ':')))
 
 
 def register_guild(guild):
     global guild_to_bots
-    guild_to_bots[guild.id] = 0
+    guild_to_bots[guild.id] = []
     for it in g_settings["settings"]:
         if guild.get_member(int(it["client_id"])) is not None:
-            guild_to_bots[guild.id] += it
+            guild_to_bots[guild.id].append(guild.get_member(int(it["client_id"])))
 
 
 async def clear_game_channel():
@@ -94,12 +93,14 @@ for s in bot.guilds:
 @bot.event
 async def on_ready():
     print("Main Bot IS Ready")
+    for guild in bot.guilds:
+        register_guild(guild)
     await clear_game_channel()
 
 
 @bot.command(aliases=["p_4", "p4", "power_4", "power4"])
 async def power_four(ctx):
-    send_command("p4", ctx, ctx.message.id)
+    await send_command("p4", ctx, [ctx.message.id])
 
 
 @bot.command(aliases=["pend"])
@@ -109,17 +110,17 @@ async def pendu():
 
 @bot.command(aliases=["morp"])
 async def morpion(ctx):
-    send_command("morp", ctx, [ctx.message.id])
+    await send_command("morp", ctx, [ctx.message.id])
 
 
 @bot.command(aliases=["bel", "blt"])
 async def bellote(ctx, point: int = 1000):
-    send_command("belote", ctx, [point])
+    await send_command("belote", ctx, [point])
 
 
 @bot.command(aliases=["chifoumi", "RPS"])
 async def rps(ctx, *args):
-    send_command("rps", ctx, [ctx.message.id, *args])
+    await send_command("rps", ctx, [ctx.message.id, *args])
 
 
 # run bot
