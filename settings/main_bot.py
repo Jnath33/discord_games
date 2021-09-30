@@ -5,6 +5,8 @@ import random
 from discord.ext import commands
 
 # Init the command count variable
+from color_z import colorz
+
 current_cmd_count = 0
 
 # init the variable neded to calculate the bot repartition
@@ -25,7 +27,7 @@ bot = commands.Bot(command_prefix='!')
 mode_to_n_of_bot = \
     {
         "rps": 0,  # Pierre feuille ciseaux,
-        "pend": 0, # Pendu
+        "pend": 0,  # Pendu
         "morp": 1,  # Morpion
         "p4": 2,  # Puissance 4
         "c_name": 3,  # Code name
@@ -101,6 +103,11 @@ async def on_ready():
 @bot.command(aliases=["p_4", "p4", "power_4", "power4"])
 async def power_four(ctx):
     await send_command("p4", ctx, [ctx.message.id])
+
+
+@bot.command(aliases=['leaderboard', 'sb', "scoreboard"])
+async def lb(ctx, *args):
+    await colorz.lb(ctx.channel, ctx.author, args[0])
 
 
 @bot.command(aliases=["pend"])

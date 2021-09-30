@@ -19,18 +19,18 @@ for setting in settings["settings"]:
     if setting["id"] == "0":
         copyfile("settings/sous_bot.py", "bot" + setting["id"] + ".py")
         os.makedirs("bot" + setting["id"] + "/data")
-        subs_process.append(subprocess.Popen(["python3",
+        subs_process.append(subprocess.Popen(["venv/bin/python3",
                                               "bot" + setting["id"] + ".py",
                                               json.dumps(setting, separators=(',', ':'))]))
         copyfile("settings/main_bot.py", "main-bot.py")
-        subs_process.append(subprocess.Popen(["python3",
+        subs_process.append(subprocess.Popen(["venv/bin/python3",
                                               "main-bot.py",
                                               json.dumps(setting, separators=(',', ':')),
                                               str(id_max)]))
     else:
         copyfile("settings/sous_bot.py", "bot" + setting["id"] + ".py")
         os.makedirs("bot" + setting["id"] + "/data")
-        subs_process.append(subprocess.Popen(["python3",
+        subs_process.append(subprocess.Popen(["venv/bin/python3",
                                               "bot" + setting["id"] + ".py",
                                               json.dumps(setting, separators=(',', ':'))]))
 

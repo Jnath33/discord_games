@@ -7,9 +7,10 @@ from os import walk, remove
 from dislash import InteractionClient, ActionRow, Button, ButtonStyle
 from discord.ext import commands
 
-import belote_card_game
-import morpion_game
-import power_four_game
+from card import belote_card_game
+from color_z import colorz
+from morpion import morpion_game
+from puissance_4 import power_four_game
 import rps_game
 
 bot_settings = json.loads(sys.argv[1])
@@ -51,6 +52,7 @@ async def update():
                     bot.loop.create_task(commands[data["cmd"]](data["c_id"], *data["args"]))
             remove("bot" + bot_settings["id"] + "/data/" + file)
         await asyncio.sleep(.5)
+
 
 @command
 async def p4(c_id, msg_id):
@@ -94,6 +96,19 @@ async def morpion(c_id, msg_id):
     await msg.edit(content="ㅤ", components=[], embed=None)
 
     await morpion_game.Game(msg, [author, inter.author]).start()
+
+
+@command
+async def colorz(channel_id, message_id):
+    chn = bot.get_channel(channel_id)
+    msg = await chn.fetch_message(message_id)
+    author = msg.author
+    await colorz.colorz(chn, author)
+
+
+@bot.event
+async def on_button_click(interaction):
+    await colorz.on_button_click(interaction)
 
 
 @command

@@ -4,7 +4,7 @@ import random
 import discord
 from dislash import ActionRow, Button, ButtonStyle
 
-import belote_card
+from card import belote_card
 
 # set all the dic
 ids = {}
@@ -374,10 +374,11 @@ class Game:
 
     # make a list with all the card
     def make_cards_list(self):
-        t_cards = [[belote_card.Card(i, m, belote_card.get_trump_color(self.id)) for m in range(7, 14)] for i in [belote_card.Color.COEUR,
-                                                                                                                  belote_card.Color.TREFLE,
-                                                                                                                  belote_card.Color.CARREAUX,
-                                                                                                                  belote_card.Color.PIQUE]]
+        t_cards = [[belote_card.Card(i, m, belote_card.get_trump_color(self.id)) for m in range(7, 14)] for i in [
+            belote_card.Color.COEUR,
+            belote_card.Color.TREFLE,
+            belote_card.Color.CARREAUX,
+            belote_card.Color.PIQUE]]
         self.cards = []
         for i in t_cards:
             self.cards += i
