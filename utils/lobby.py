@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 from dislash import ActionRow, Button, ButtonStyle
 
@@ -73,3 +75,7 @@ async def lobby(ctx, title="Lobby :", description="",
                 await inter.reply(content="t", type=6)
         else:
             await inter.reply(content="Vous n'êtes pas dans la partie", ephemeral=True)
+
+    await asyncio.sleep(timeout)
+    await msg.delete()
+    return players

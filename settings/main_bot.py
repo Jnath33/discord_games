@@ -27,7 +27,7 @@ bot = commands.Bot(command_prefix='!')
 mode_to_n_of_bot = \
     {
         "rps": 0,  # Pierre feuille ciseaux,
-        "pend": 0,  # Pendu
+        "pendu": 0,  # Pendu
         "morp": 1,  # Morpion
         "p4": 2,  # Puissance 4
         "c_name": 3,  # Code name
@@ -43,7 +43,7 @@ mode_to_n_of_bot = \
 
 # Set's global usage function
 async def game_can_be_start(mode, guild, ctx):
-    if len(guild_to_bots[guild.id]) >= mode_to_n_of_bot[mode] or g_settings["main_serv_id"] == guild.id:
+    if len(guild_to_bots[guild.id]) >= mode_to_n_of_bot[mode] or guild.id in g_settings["main_serv_id"]:
         return True
     else:
         await ctx.send("Vous n'avez pas assez de bot !setup")
@@ -78,7 +78,10 @@ async def clear_game_channel():
     for guild in bot.guilds:
         for categories in guild.categories:
             for channel in categories.text_channels:
-                if len(channel.name.split("-")) >= 3 and " ".join(channel.name.split("-")[0:2]) == "game card":
+                info = channel.name.split("-")
+                if len(info) >= 3 and " ".join(info[0:2]) == "game card":
+                    await channel.delete()
+                if len(info) == 3 and info[1] == "pendu_game":
                     await channel.delete()
     print("end of clear")
 
@@ -117,8 +120,8 @@ async def lb(ctx, *args):
 
 
 @bot.command(aliases=["pend"])
-async def pendu():
-    print("")
+async def pendu(ctx):
+    await send_command("pendu", ctx, [])
 
 
 @bot.command(aliases=["morp"])

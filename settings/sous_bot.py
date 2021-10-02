@@ -6,13 +6,14 @@ import json
 from os import walk, remove
 from dislash import InteractionClient, ActionRow, Button, ButtonStyle
 from discord.ext import commands
-from discord_components import DiscordComponents
 
 from card import belote_card_game
 import color_z.colorz as cz
 from morpion import morpion_game
+from pendu import pendu_game
 from puissance_4 import power_four_game
 import rps_game
+from utils import lobby
 
 bot_settings = json.loads(sys.argv[1])
 
@@ -212,6 +213,13 @@ async def belote(c_id, point):
     else:
         await j_msg.edit(components=[], content="Une érreur est survenue vous ne pouver pas démarer de partie")
 
+@command
+async def pendu(c_id, *args):
+    ctx = bot.get_channel(c_id)
+    players = await lobby.lobby(ctx)
+    g = pendu_game.Game(players, ctx)
+    if g.can_start:
+        await g.end_init(bot_settings["id"])
 
 @command
 async def rps(c_id, msg_id, *args):
@@ -241,5 +249,9 @@ async def rps(c_id, msg_id, *args):
         # start the solo rps game
         await rps_game.Game().solo(ctx, author)
 
+
+@bot.event
+async def on_message(message):
+    await pendu_game.verif_message(bot_settings["id"], message.channel, message)
 
 bot.run(bot_settings["token"])
