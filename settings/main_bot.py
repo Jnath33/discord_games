@@ -5,7 +5,7 @@ import random
 from discord.ext import commands
 
 # Init the command count variable
-from color_z import colorz
+import color_z.colorz as cz
 
 current_cmd_count = 0
 
@@ -31,6 +31,7 @@ mode_to_n_of_bot = \
         "morp": 1,  # Morpion
         "p4": 2,  # Puissance 4
         "c_name": 3,  # Code name
+        "colorz": 3,  # ColorZ
         "belote": 4,  # Bellote
         "presi": 5,  # Président
         "u_cover": 6,  # Undercover
@@ -100,6 +101,11 @@ async def on_ready():
     await clear_game_channel()
 
 
+@bot.command(aliases=["cz", "colorZ", "color_z"])
+async def colorz(ctx):
+    await send_command("colorz", ctx, [ctx.message.id])
+
+
 @bot.command(aliases=["p_4", "p4", "power_4", "power4"])
 async def power_four(ctx):
     await send_command("p4", ctx, [ctx.message.id])
@@ -107,7 +113,7 @@ async def power_four(ctx):
 
 @bot.command(aliases=['leaderboard', 'sb', "scoreboard"])
 async def lb(ctx, *args):
-    await colorz.lb(ctx.channel, ctx.author, args[0])
+    await cz.lb(ctx.channel, ctx.author, *args)
 
 
 @bot.command(aliases=["pend"])

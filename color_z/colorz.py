@@ -1,5 +1,5 @@
 import discord
-from discord_components import Button, ButtonStyle
+from dislash import ActionRow, Button, ButtonStyle
 import random
 import time
 import pandas as pd
@@ -19,8 +19,17 @@ async def colorz(channel, author):
     embed = discord.Embed(title="ColorZ", description="Appuyez sur les bonnes couleurs le plus vite possible.\nprêt ?",
                           color=0xE1E1E1)
     msg[author.id] = await channel.send(embed=embed, components=[
-        [Button(label="Go", style=ButtonStyle.green, id="start"),
-         Button(label="ULTRA HARD MODE", style=ButtonStyle.red, id="hardmode")]])
+        ActionRow(Button(label="Go", style=ButtonStyle.green, custom_id="start"),
+                  Button(label="ULTRA HARD MODE", style=ButtonStyle.red, custom_id="hardmode"))
+    ])
+
+    def check_menu(inter):
+        return inter.author.id == author.id and msg[author.id].id == inter.message.id
+
+    inter = await msg[author.id].wait_for_button_click(check_menu)
+    await inter.reply(content="test", type=6, fetch_response_message=False)
+
+    await on_button_click(inter)
 
 
 async def game(ctx):
@@ -66,23 +75,31 @@ async def game(ctx):
     buttons = {}
 
     for i_let in ["A", "B", "C", "D"]:
-        buttons[i_let] = []
+        buttons[i_let] = ActionRow()
         for i in range(1, 6):
-            buttons[i_let].append(
-                Button(emoji=color_list[colors[i_let][i]][2], style=ButtonStyle.grey, id=i_let + str(i))
+            buttons[i_let].buttons.append(
+                Button(emoji=color_list[colors[i_let][i]][2], style=ButtonStyle.grey, custom_id=i_let + str(i))
             )
 
     userColorList[ctx.author.id] = win_color, \
-                                   [colors["A"].values(),
-                                    colors["B"].values(),
-                                    colors["C"].values(),
-                                    colors["D"].values()]
+                                   [list(colors["A"].values()),
+                                    list(colors["B"].values()),
+                                    list(colors["C"].values()),
+                                    list(colors["D"].values())]
 
     await msg[ctx.author.id].edit(embed=embed,
                                   components=[buttons["A"],
                                               buttons["B"],
                                               buttons["C"],
                                               buttons["D"]])
+
+    def check_game(inter):
+        return inter.author.id == ctx.author.id and inter.message.id == ctx.message.id
+
+    inter = await msg[ctx.author.id].wait_for_button_click(check_game)
+    await inter.reply(content="test", type=6, fetch_response_message=False)
+
+    await on_button_click(inter)
 
 
 async def color_hard():
@@ -166,21 +183,22 @@ async def on_button_click(interaction):
     global userUltraHardMode
 
     # Verifie quel bouton est appuyer, 123=Colonne et ABC    =Ligne
-    if interaction.component.id == "start":
+    if interaction.clicked_button.custom_id == "start":
+        userTime[interaction.author.id] = time.time()
         userScore[interaction.author.id] = ""
-        await interaction.respond(type=6, content="test")
+        if interaction.author.id in userUltraHardMode:
+            del userUltraHardMode[interaction.author.id]
         await game(interaction)
         userTime[interaction.author.id] = time.time()
-    if interaction.component.id == "stop":
+        return
+    if interaction.clicked_button.custom_id == "stop":
         userScore[interaction.author.id] = ""
-        await interaction.respond(type=6, content="test")
         embed = discord.Embed(title="ColorZ", description="La partie est terminé", color=0xE1E1E1)
         await msg[interaction.author.id].edit(embed=embed, components=[])
 
     # Bouton pour le hard mode
-    if interaction.component.id == "hardmode":
+    if interaction.clicked_button.custom_id == "hardmode":
         userScore[interaction.author.id] = ""
-        await interaction.respond(type=6, content="test")
         embed = discord.Embed(title="ColorZ ULTRA HARD MODEEEEEEE",
                               description="Le ColorZ hard mode rend aléatoire les couleurs cliquées suivant des "
                                           "couleurs annoncée au début",
@@ -189,15 +207,24 @@ async def on_button_click(interaction):
                         value="Si on vous demande de cliquer sur du bleu et qu'au début de la parti on vous à dis que "
                               "bleu=vert vous devez cliquer sur du vert !",
                         inline=False)
-        button = [[Button(style=ButtonStyle.green, label="Voir mes couleurs", id="hardmodeStart"),
-                   Button(style=ButtonStyle.red, label="Normal Mode", id="normalmode")]]
+        button = [ActionRow(Button(style=ButtonStyle.green, label="Voir mes couleurs", custom_id="hardmodeStart"),
+                            Button(style=ButtonStyle.red, label="Normal Mode", custom_id="normalmode"))]
+
         await msg[interaction.author.id].edit(embed=embed, components=button)
-    if interaction.component.id == "hardmodeStart":
+
+        def check(inter):
+            return inter.author.id == interaction.author.id and inter.message.id == interaction.message.id
+
+        inter = await msg[interaction.author.id].wait_for_button_click(check)
+        await inter.reply(content="test", type=6, fetch_response_message=False)
+
+        await on_button_click(inter)
+        return
+    if interaction.clicked_button.custom_id == "hardmodeStart":
         userTime[interaction.author.id] = time.time()
         userScore[interaction.author.id] = ""
         color = await color_hard()
         userUltraHardMode[interaction.author.id] = [color, True]
-        await interaction.respond(type=6, content="test")
         text = ""
         color_list = {"blanc": [0xe6e7e8, ":white_large_square:", "⬜"],
                       "orange": [0xf4900c, ":orange_square:", "🟧"],
@@ -215,197 +242,64 @@ async def on_button_click(interaction):
         embed = discord.Embed(title="ColorZ ULTRA HARD MODEEEEEEE", color=0xdd2e44)
         embed.add_field(name="Vos couleurs :", value=text, inline=False)
         embed.set_footer(text="Le temps pour regarder les couleurs est aussi comptabilisé")
-        button = [[Button(style=ButtonStyle.green, label="GOOOOOOOOO !!!", id="hardmodeGame")]]
+        button = [ActionRow(Button(style=ButtonStyle.green, label="GOOOOOOOOO !!!", custom_id="hardmodeGame"))]
 
         await msg[interaction.author.id].edit(embed=embed, components=button)
 
-    if interaction.component.id == "hardmodeGame":
-        userScore[interaction.author.id] = ""
-        await interaction.respond(type=6, content="test")
-        await game(interaction)
+        def check(inter):
+            return inter.author.id == interaction.author.id and inter.message.id == interaction.message.id
 
-    if interaction.component.id == "normalmode":
-        await interaction.respond(type=6, content="test")
+        inter = await msg[interaction.author.id].wait_for_button_click(check)
+        await inter.reply(content="test", type=6, fetch_response_message=False)
+        await on_button_click(inter)
+        return
+
+    if interaction.clicked_button.custom_id == "hardmodeGame":
+        userScore[interaction.author.id] = ""
+        await game(interaction)
+        return
+
+    if interaction.clicked_button.custom_id == "normalmode":
         userScore[interaction.author.id] = ""
         embed = discord.Embed(title="ColorZ",
                               description="Appuyez sur les bonnes couleurs le plus vite possible.\nprêt ?",
                               color=0xE1E1E1)
         msg[interaction.author.id] = await interaction.edit(embed=embed, components=[
-            [Button(label="Go", style=ButtonStyle.green, id="start"),
-             Button(label="ULTRA HARD MODE", style=ButtonStyle.red, id="hardmode")]])
+            ActionRow(Button(label="Go", style=ButtonStyle.green, custom_id="start"),
+                      Button(label="ULTRA HARD MODE", style=ButtonStyle.red, custom_id="hardmode"))])
 
-    # Bouton ligne A cliqué
-    if interaction.component.id == "A1":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][0][0]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "A2":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][0][1]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "A3":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][0][2]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "A4":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][0][3]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "A5":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][0][4]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
+        def check(inter):
+            return inter.author.id == interaction.author.id and inter.message.id == interaction.message.id
 
-    # Bouton ligne B Cliqué
-    if interaction.component.id == "B1":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][1][0]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "B2":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][1][1]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "B3":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][1][2]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "B4":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][1][3]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "B5":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][1][4]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
+        inter = await msg[interaction.author.id].wait_for_button_click(check)
+        await inter.reply(content="test", type=6, fetch_response_message=False)
+        await on_button_click(inter)
+        return
 
-    # Bouton ligne C Cliqué
-    if interaction.component.id == "C1":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][2][0]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "C2":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][2][1]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "C3":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][2][2]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "C4":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][2][3]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "C5":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][2][4]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
+        # Bouton ligne A cliqué
+    c_to_l = ["A", "B", "C", "D"]
 
-    # Bouton ligne D Cliqué
-    if interaction.component.id == "D1":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][3][0]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "D2":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][3][1]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "D3":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][3][2]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "D4":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][3][3]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
-    if interaction.component.id == "D5":
-        if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][3][4]:
-            userScore[interaction.author.id] += "1"
-        else:
-            userScore[interaction.author.id] += "0"
-        if len(userScore[interaction.author.id]) != 5:
-            await interaction.respond(type=6, content="test")
-            await game(interaction)
+    def c_to_c(c):
+        return c + 1
+
+    find = False
+    for let in range(4):
+        for chi in range(5):
+            if interaction.clicked_button.custom_id == c_to_l[let] + str(c_to_c(chi)):
+                if userColorList[interaction.author.id][0] == userColorList[interaction.author.id][1][let][chi]:
+                    userScore[interaction.author.id] += "1"
+                else:
+                    userScore[interaction.author.id] += "0"
+                if len(userScore[interaction.author.id]) != 5:
+                    await game(interaction)
+                find = True
+                break
+        if find:
+            break
 
     if len(userScore[interaction.author.id]) == 5:
         time_end = time.time()
         time_total = round(time_end - userTime[interaction.author.id], 3)
-        await interaction.respond(type=6, content="test")
         score_circle = ""
         score = 0
         for word in userScore[interaction.author.id]:
@@ -430,17 +324,25 @@ async def on_button_click(interaction):
                 id_button = "start"
         else:
             id_button = "start"
+        del userScore[interaction.author.id]
         await msg[interaction.author.id].edit(embed=embed, components=[
-            [Button(label="Recommencer ?", id=id_button, style=ButtonStyle.green),
-             Button(label="Arreter ?", id="stop", style=ButtonStyle.red)]])
+            ActionRow(Button(label="Recommencer ?", custom_id=id_button, style=ButtonStyle.green),
+                      Button(label="Arreter ?", custom_id="stop", style=ButtonStyle.red))])
+
+        def check(inter):
+            return inter.author.id == interaction.author.id and inter.message.id == interaction.message.id
+
+        inter = await msg[interaction.author.id].wait_for_button_click(check)
+        await inter.reply(content="test", type=6, fetch_response_message=False)
+        await on_button_click(inter)
 
 
 async def add_leaderboard(ctx, time):
     global userUltraHardMode
-    fichier = "leaderboard.csv"
+    fichier = "color_z/leaderboard.csv"
     if ctx.author.id in userUltraHardMode:
         if userUltraHardMode[ctx.author.id][1]:
-            fichier = "leaderboardHard.csv"
+            fichier = "color_z/leaderboardHard.csv"
 
     leaderboard = pd.read_table(fichier, sep=',', header=0)
     best_score = ""
@@ -459,11 +361,11 @@ async def add_leaderboard(ctx, time):
     return best_score
 
 
-async def lb(channel, author, hard):
-    fichier = "leaderboard.csv"
+async def lb(channel, author, *hard):
+    fichier = "color_z/leaderboard.csv"
     embed = discord.Embed(title="ColorZ", color=0xE1E1E1)
-    if "hard" == hard:
-        fichier = "leaderboardHard.csv"
+    if "hard" in hard:
+        fichier = "color_z/leaderboardHard.csv"
         embed = discord.Embed(title="ColorZ Ultra Hard Mode", color=0xdd2e44)
     else:
         embed.set_footer(text="Faites \"!lb hard\" pour voir le leaderboard du hard mode")

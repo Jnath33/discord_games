@@ -6,9 +6,10 @@ import json
 from os import walk, remove
 from dislash import InteractionClient, ActionRow, Button, ButtonStyle
 from discord.ext import commands
+from discord_components import DiscordComponents
 
 from card import belote_card_game
-from color_z import colorz
+import color_z.colorz as cz
 from morpion import morpion_game
 from puissance_4 import power_four_game
 import rps_game
@@ -77,7 +78,7 @@ async def p4(c_id, msg_id):
 
 
 @command
-async def morpion(c_id, msg_id):
+async def morp(c_id, msg_id):
     ctx = bot.get_channel(c_id)
     msg = await ctx.fetch_message(msg_id)
     author = msg.author
@@ -103,12 +104,7 @@ async def colorz(channel_id, message_id):
     chn = bot.get_channel(channel_id)
     msg = await chn.fetch_message(message_id)
     author = msg.author
-    await colorz.colorz(chn, author)
-
-
-@bot.event
-async def on_button_click(interaction):
-    await colorz.on_button_click(interaction)
+    await cz.colorz(chn, author)
 
 
 @command
