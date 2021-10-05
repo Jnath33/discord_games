@@ -55,6 +55,12 @@ async def update():
 
 
 @command
+def undercover(c_id):
+    ctx = bot.get_channel(c_id)
+    undercover.start(ctx, ctx.gui)
+
+
+@command
 async def p4(c_id, msg_id):
     ctx = bot.get_channel(c_id)
     msg = await ctx.fetch_message(msg_id)

@@ -130,5 +130,9 @@ async def rps(ctx, *args):
     await send_command("rps", ctx, [ctx.message.id, *args])
 
 
+@bot.command(aliases=["under"])
+async def undercover(ctx):
+    await send_command("undercover", ctx, [])
+
 # run bot
 bot.run(bot_settings["token"])
