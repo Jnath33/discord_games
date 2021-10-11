@@ -193,12 +193,14 @@ async def on_button_click(interaction):
         return
     if interaction.clicked_button.custom_id == "stop":
         userScore[interaction.author.id] = ""
+        await interaction.respond(type=6, content="test")
         embed = discord.Embed(title="ColorZ", description="La partie est terminé", color=0xE1E1E1)
         await msg[interaction.author.id].edit(embed=embed, components=[])
 
     # Bouton pour le hard mode
     if interaction.clicked_button.custom_id == "hardmode":
         userScore[interaction.author.id] = ""
+        await interaction.respond(type=6, content="test")
         embed = discord.Embed(title="ColorZ ULTRA HARD MODEEEEEEE",
                               description="Le ColorZ hard mode rend aléatoire les couleurs cliquées suivant des "
                                           "couleurs annoncée au début",
@@ -225,6 +227,7 @@ async def on_button_click(interaction):
         userScore[interaction.author.id] = ""
         color = await color_hard()
         userUltraHardMode[interaction.author.id] = [color, True]
+        await interaction.respond(type=6, content="test")
         text = ""
         color_list = {"blanc": [0xe6e7e8, ":white_large_square:", "⬜"],
                       "orange": [0xf4900c, ":orange_square:", "🟧"],
@@ -256,6 +259,7 @@ async def on_button_click(interaction):
 
     if interaction.clicked_button.custom_id == "hardmodeGame":
         userScore[interaction.author.id] = ""
+        await interaction.respond(type=6, content="test")
         await game(interaction)
         return
 
@@ -300,6 +304,7 @@ async def on_button_click(interaction):
     if len(userScore[interaction.author.id]) == 5:
         time_end = time.time()
         time_total = round(time_end - userTime[interaction.author.id], 3)
+        await interaction.respond(type=6, content="test")
         score_circle = ""
         score = 0
         for word in userScore[interaction.author.id]:
