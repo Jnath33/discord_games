@@ -49,7 +49,7 @@ async def update():
         filenames = next(walk("bot" + bot_settings["id"] + "/data"), (None, None, []))[2]
         for file in filenames:
             with open("bot" + bot_settings["id"] + "/data/" + file, "r") as f:
-                data = json.load(f)
+                data = json.loads(f.read())
                 if data["cmd"] in commands:
                     bot.loop.create_task(commands[data["cmd"]](data["c_id"], *data["args"]))
             remove("bot" + bot_settings["id"] + "/data/" + file)

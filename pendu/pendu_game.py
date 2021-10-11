@@ -92,7 +92,7 @@ class Game:
         self.guild = channel.guild
         self.channel = channel
         self.d_channel = channel
-        self.word = random.choice(words)
+        self.word = random.choice(words).lower()
         self.alredy_say_letter = []
         self.false_letter = []
         self.g_message = None
@@ -131,13 +131,13 @@ class Game:
                         self.end = True
                         losse_embed = discord.Embed(name="Pendu", color=0xff0000)
                         losse_embed.add_field(name="Perdu :", value="Le mot était **" +
-                                                                    self.word[0].upper+self.word[1::] + "**")
+                                                                    self.word[0].upper() + self.word[1::] + "**")
                         await self.d_channel.send(embed=losse_embed)
                         await asyncio.sleep(.5)
                         await self.channel.delete()
                     win = True
                     for let in self.word:
-                        if not let in self.alredy_say_letter:
+                        if let not in self.alredy_say_letter:
                             win = False
                     if win:
                         self.end = True
