@@ -1,5 +1,4 @@
 import discord
-from discord_components import Button, ButtonStyle
 import random
 import time
 import pandas as pd
