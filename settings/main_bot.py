@@ -5,7 +5,10 @@ import random
 from discord.ext import commands
 
 # Init the command count variable
+from dislash import InteractionClient
+
 import color_z.colorz as cz
+from card import president
 
 current_cmd_count = 0
 
@@ -22,6 +25,7 @@ bot_settings = json.loads(sys.argv[1])
 id_max = int(sys.argv[2])  # The maximum id
 
 bot = commands.Bot(command_prefix='!')
+inter_client = InteractionClient(bot)
 
 # The list of game with the number of bot in the server needed to run the game
 mode_to_n_of_bot = \
@@ -104,6 +108,11 @@ async def on_ready():
     await clear_game_channel()
 
 
+@bot.command()
+async def test(ctx):
+    await president.Game().start(ctx.channel)
+
+
 @bot.command(aliases=["cz", "colorZ", "color_z"])
 async def colorz(ctx):
     await send_command("colorz", ctx, [ctx.message.id])
@@ -142,6 +151,7 @@ async def rps(ctx, *args):
 @bot.command(aliases=["under"])
 async def undercover(ctx):
     await send_command("undercover", ctx, [])
+
 
 # run bot
 bot.run(bot_settings["token"])

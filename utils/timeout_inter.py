@@ -10,7 +10,7 @@ def timeout(msg, check_func, timeout=45, *args):
 
     @on_click.no_checks()
     def click(inter):
-        if check_func():
+        if check_func(inter):
             end.set()
             out[0] = inter
             await inter.reply(content="t", type=6)
