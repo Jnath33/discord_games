@@ -1,5 +1,6 @@
 from filecmp import cmp
 
+import discord
 from dislash import ActionRow, Button, ButtonStyle
 
 from card import color
@@ -7,6 +8,19 @@ from utils import menu
 
 
 class Game:
+    def __init__(self, players, min_card_per_player=7):
+        self.cards = []
+        for i_1 in color.Color:
+            for i_2 in range(13):
+                self.cards.append(Card(i_1, i_2))
+        min_card_needed = len(players) * min_card_per_player
+        int_to_color = {0: color.Color.PIQUE, 1: color.Color.TREFLE, 2: color.Color.COEUR, 3: color.Color.CARREAUX}
+        if min_card_needed < 13 * 4:
+            c_i = 0
+            for i in range(int((min_card_needed - 53 + 12) / 13)):
+                for i_2 in range(13):
+                    self.cards.append(Card(int_to_color[c_i % 4], i_2))
+
     async def start(self, ctx):
         msg = await ctx.send(content="test", components=[])
         inter = await menu.new_menu(msg, Hand([Card(color.Color.COEUR, 1),
@@ -42,10 +56,18 @@ class Game:
 
 class Card:
     n_to_score = {1: 14, 2: 15, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, 10: 10, 11: 11, 12: 12, 13: 13}
+    to_str = {11: "V", 12: "D", 13: "R"}
 
-    def __init__(self, color, number):
+    def get_str_number(self):
+        if self.number <= 10:
+            return str(self.number)
+        else:
+            return Card.to_str[self.number]
+
+    def __init__(self, color, number, id=0):
         self.color = color
         self.number = number
+        self.id = id
 
     def can_play(self, count=1, played_card=None) -> bool:
         if played_card is None:
@@ -82,7 +104,7 @@ class Card:
         return Card.n_to_score[self.number] >= Card.n_to_score[other.number]
 
     def __str__(self):
-        return self.color.value["id"] + "-" + str(self.number)
+        return self.color.value["id"] + "-" + str(self.number) + "-" + self.id
 
 
 class Hand:
@@ -101,7 +123,7 @@ class Hand:
             buttons[c_list][c_buttons].add_button(
                 style=ButtonStyle.gray,
                 emoji=card.color.value["uemoji"],
-                label=str(card.number),
+                label=card.get_str_number(),
                 custom_id=str(card),
                 disabled=(not card.can_play(self.hand.count(card), played_card)) or disabled
             )

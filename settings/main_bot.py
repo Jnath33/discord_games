@@ -2,7 +2,10 @@ import json
 import sys
 import random
 
+import discord
 from discord.ext import commands
+
+from utils import emoji
 
 # Init the command count variable
 from dislash import InteractionClient
@@ -102,6 +105,8 @@ for s in bot.guilds:
 # bot's function
 @bot.event
 async def on_ready():
+    g = await bot.fetch_guild(762399518070407190)
+    emoji.set(g)
     print("Main Bot IS Ready")
     for guild in bot.guilds:
         register_guild(guild)
@@ -110,7 +115,8 @@ async def on_ready():
 
 @bot.command()
 async def test(ctx):
-    await president.Game().start(ctx.channel)
+    await ctx.send(str(emoji.carte_deck["Q♣"][0])+"\n"+str(emoji.carte_deck["Q♣"][1]))
+    #await president.Game().start(ctx.channel)
 
 
 @bot.command(aliases=["cz", "colorZ", "color_z"])
